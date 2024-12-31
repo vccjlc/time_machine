@@ -342,7 +342,7 @@ AVATAR_URLS = {
     "Arguer1": "https://example.com/arg1.png",
     "Arguer2": "https://example.com/arg2.png",
     "Judge": "https://example.com/judge.png",
-    "fallback": "https://example.com/fallback.png",
+    "fallback": "https://imgur.com/wyw9Hrf",
 }
 
 ###############################################################################
