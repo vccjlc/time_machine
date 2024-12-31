@@ -220,25 +220,24 @@ def decide_style() -> str:
         return "moderate"
 
 ###############################################################################
-# 4) The main multi-agent function (UPDATED for new library)
+# 4) The main multi-agent function (NO DECORATOR, NO THEME)
 ###############################################################################
 async def run_famous_people_contest():
     """
-    Runs a short conversation among:
+    We do a short conversation among:
       - God (one-line)
-      - Decorator (theme/icon)
-      - Host (introduces two historical figures & calls Judge)
+      - Host (introduces two famous people & calls Judge)
       - Two arguers
       - A Judge (one-line verdict)
+
+    The 'Decorator' is removed, so no theme picking.
     """
-    # Create the model client
     model_client = OpenAIChatCompletionClient(
         api_key=st.secrets["openai"]["OPENAI_API_KEY"],
-        model="gpt-4",   # or "gpt-3.5-turbo"
+        model="gpt-4o-mini",  # You said this model is valid in your environment
         temperature=1.0
     )
 
-    # Pick random participants
     person1, person2 = pick_two_people()
     topic = pick_random_topic()
     style = decide_style()
@@ -247,114 +246,82 @@ async def run_famous_people_contest():
     god_system_message = f"""
 You are GOD.
 Output exactly one short line, then remain silent:
-"My children, let {person1} and {person2} converse about '{topic}' with a {style} flavor.
-Decorator, do your job: pick a theme, choose an icon, pass it to the Host. Thank you."
+"My children, let {person1} and {person2} speak about '{topic}' in a {style} manner.
+Host, please guide them. Thank you."
 Then remain silent afterward.
 """
     god_agent = AssistantAgent(
         name="God",
-        description="A deity that calls on Decorator, then is silent.",
+        description="A deity that briefly introduces the conversation, then is silent.",
         system_message=god_system_message,
         model_client=model_client,
         tools=[]
     )
-    god_agent.display_name = "God"
 
-    # 2) Decorator
-    decorator_system_message = """
-You are the Decorator.
-Pick either 'light theme' or 'dark theme' plus an icon.
-Then say: "Host, here is the theme and icon. Thank you."
-Then remain silent.
-"""
-    decorator_agent = AssistantAgent(
-        name="Decorator",
-        description="Chooses environment theme/icon, then silent.",
-        system_message=decorator_system_message,
-        model_client=model_client,
-        tools=[]
-    )
-    decorator_agent.display_name = "Decorator"
-
-    # 3) Host
+    # 2) Host
     host_system_message = f"""
 You are the Host.
-1) Acknowledge Decorator's theme/icon.
-2) Introduce {person1} and {person2} about {topic}.
-3) Let them each speak ~3 short lines.
+1) Introduce {person1} and {person2} (who they were, briefly).
+2) Mention the subtopic of {topic}.
+3) Prompt them to speak ~3 lines each.
 4) Then call the Judge: "Judge, your verdict please."
-5) After the Judge, say: "Thank you everyone! THE_END."
-Don't produce THE_END until after the Judge's verdict.
+5) After the Judge, say: "THE_END."
+Stop only after THE_END.
 """
     host_agent = AssistantAgent(
         name="Host",
-        description="Introduces conversation, calls Judge, ends the show.",
+        description="Introduces conversation, calls Judge, ends show with THE_END.",
         system_message=host_system_message,
         model_client=model_client,
         tools=[]
     )
-    host_agent.display_name = "Host"
 
-    # 4) Arguer1
+    # 3) Arguer1
     arguer1_system_message = f"""
 You are {person1}.
-Speak with {style} style.
-Try to outshine {person2}. Keep lines short (1-2 sentences).
-Stay in character.
+Engage with {person2} about '{topic}' using a {style} style.
+Keep lines short. Remain in character.
 """
     arguer1_agent = AssistantAgent(
         name="Arguer1",
-        description=f"Represents {person1}.",
+        description=f"Represents {person1}",
         system_message=arguer1_system_message,
         model_client=model_client,
         tools=[]
     )
-    arguer1_agent.display_name = person1
 
-    # 5) Arguer2
+    # 4) Arguer2
     arguer2_system_message = f"""
 You are {person2}.
-Speak with {style} style.
-Try to win or impress {person1}. Keep lines short (1-2 sentences).
-Stay in character.
+Engage with {person1} about '{topic}' using a {style} style.
+Try to impress or outshine them. Short lines.
 """
     arguer2_agent = AssistantAgent(
         name="Arguer2",
-        description=f"Represents {person2}.",
+        description=f"Represents {person2}",
         system_message=arguer2_system_message,
         model_client=model_client,
         tools=[]
     )
-    arguer2_agent.display_name = person2
 
-    # 6) Judge
+    # 5) Judge
     judge_system_message = """
 You are the Judge.
-Summarize the conversation in one short line,
-then declare a winner or draw in exactly one sentence.
-Remain silent afterward.
+Summarize in one short line, then declare a winner or a draw in one sentence.
+Then remain absolutely silent.
 """
     judge_agent = AssistantAgent(
         name="Judge",
-        description="Issues a short verdict, picks a winner or draw, then silent.",
+        description="Gives a short verdict, then silent.",
         system_message=judge_system_message,
         model_client=model_client,
         tools=[]
     )
-    judge_agent.display_name = "Judge"
 
-    # Termination
+    # 6) Termination after "THE_END"
     termination_condition = TextMentionTermination("THE_END")
-    participants = [
-        god_agent,
-        decorator_agent,
-        host_agent,
-        arguer1_agent,
-        arguer2_agent,
-        judge_agent
-    ]
+    participants = [god_agent, host_agent, arguer1_agent, arguer2_agent, judge_agent]
 
-    # Build the group chat
     chat = SelectorGroupChat(
         participants=participants,
         model_client=model_client,
@@ -363,52 +330,33 @@ Remain silent afterward.
     )
 
     async for msg in chat.run_stream(task="Dear GOD, please speak."):
-        # Return each TaskResult as we get it
-        yield msg
+        yield msg  # yield each conversation step
 
 ###############################################################################
-# 5) AVATAR DICTIONARY (for icons/pictures)
+# 5) AVATARS (No names displayed, only pictures)
 ###############################################################################
-# You can replace these URLs with real images, or remove if you don't want avatars.
+# Replace these with your own URLs. If participant not found, fallback used.
 AVATAR_URLS = {
-    "God": "https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.christianity.com%2Fwiki%2Fgod%2Fdo-we-know-what-god-looks-like.html&psig=AOvVaw053Jg-lQ66UdBwK2lUSDq6&ust=1735761239499000&source=images&cd=vfe&opi=89978449&ved=0CBQQjRxqFwoTCMj2jNLk0ooDFQAAAAAdAAAAABAE",
-    "Decorator": "https://raw.githubusercontent.com/misc-1/gpt-avatars/main/decorator.png",
-    "Host": "https://raw.githubusercontent.com/misc-1/gpt-avatars/main/host.png",
-    "Judge": "https://raw.githubusercontent.com/misc-1/gpt-avatars/main/judge.png",
-    # If you want specific images for individuals:
-    "Albert Einstein": "https://raw.githubusercontent.com/misc-1/gpt-avatars/main/einstein.png",
-    # fallback for unknown
-    "fallback": "https://raw.githubusercontent.com/misc-1/gpt-avatars/main/generic.png",
+    "God": "https://example.com/god.png",
+    "Host": "https://example.com/host.png",
+    "Arguer1": "https://example.com/arg1.png",
+    "Arguer2": "https://example.com/arg2.png",
+    "Judge": "https://example.com/judge.png",
+    "fallback": "https://example.com/fallback.png",
 }
 
 ###############################################################################
 # 6) The Streamlit UI
 ###############################################################################
-def display_message(speaker_name: str, content: str, theme: str, icon: str):
-    """Render each message with minimal styling + optional avatar image."""
-    if theme == "dark theme":
-        box_style = (
-            "background-color: #333; color: #fff; "
-            "padding: 10px; border-radius: 5px; margin-bottom: 10px;"
-        )
-    else:
-        box_style = (
-            "background-color: #f9f9f9; color: #000; "
-            "padding: 10px; border-radius: 5px; margin-bottom: 10px;"
-        )
-
-    # Grab a matching avatar if we have it, else fallback
-    avatar_url = AVATAR_URLS.get(speaker_name, AVATAR_URLS["fallback"])
-
-    # We'll embed the avatar next to the text
+def display_avatar_and_text(avatar_url: str, content: str):
+    """Render a message with avatar, no name displayed."""
     st.markdown(
         f"""
-        <div style="{box_style} display:flex; align-items:flex-start;">
-            <img src="{avatar_url}" style="width:40px; height:40px; border-radius:20px; margin-right:10px;" />
-            <div>
-                <strong>{speaker_name} {icon if speaker_name=='Decorator' else ''}:</strong>
-                <p style="margin:0;">{content}</p>
-            </div>
+        <div style="background-color:#f9f9f9; color:#000; padding:10px; 
+                    border-radius:5px; margin-bottom:10px; display:flex;">
+            <img src="{avatar_url}" style="width:40px; height:40px; 
+                     border-radius:20px; margin-right:10px;" />
+            <div>{content}</div>
         </div>
         """,
         unsafe_allow_html=True
@@ -423,57 +371,30 @@ async def get_contest_messages():
 def main():
     st.set_page_config(page_title="Time Machine", layout="centered")
 
-    # Initialize theme/icon if not set
-    if "theme" not in st.session_state:
-        st.session_state.theme = "light theme"
-    if "icon" not in st.session_state:
-        st.session_state.icon = "☀️"
+    st.title("Time Machine — Simplified")
+    st.write("A short conversation between God, a Host, two arguers, and a Judge. Decorator is removed.")
 
-    st.title("Time Machine")
-    st.write("Press the button below to see a short interplay.")
-
-    if st.button("Start the Contest"):
-        # Re-initialize theme/icon each run
-        st.session_state.theme = "light theme"
-        st.session_state.icon = "☀️"
-
-        # 1) Run the conversation
+    if st.button("Run the Contest"):
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
-        tasks = loop.run_until_complete(get_contest_messages())
+        conversation_steps = loop.run_until_complete(get_contest_messages())
         loop.close()
 
-        # 2) Each returned item is likely a TaskResult with e.g. .agent_name, .content
-        #    We'll parse the agent name, text
-        for task_result in tasks:
-            agent_name = getattr(task_result, "agent_name", "") or getattr(task_result, "participant_name", "")
+        # conversation_steps = [TaskResult(...), TaskResult(...), ...]
+        for step in conversation_steps:
+            agent_name = getattr(step, "agent_name", "")
+            content = getattr(step, "content", "")
             if not agent_name:
-                agent_name = "UnknownAgent"
+                agent_name = "fallback"
 
-            text_output = getattr(task_result, "content", "") or ""
+            # Find matching avatar
+            avatar_url = AVATAR_URLS.get(agent_name, AVATAR_URLS["fallback"])
 
-            # If Decorator picks theme/icon
-            if agent_name == "Decorator":
-                # Check if they said "dark theme" or "light theme"
-                if "dark theme" in text_output.lower():
-                    st.session_state.theme = "dark theme"
-                elif "light theme" in text_output.lower():
-                    st.session_state.theme = "light theme"
-
-                # Check if an icon is specified
-                match = re.search(r"icon\s*'([^']+)'", text_output)
-                if match:
-                    st.session_state.icon = match.group(1)
-
-            # 3) Display
-            display_message(
-                speaker_name=agent_name,
-                content=text_output,
-                theme=st.session_state.theme,
-                icon=st.session_state.icon
-            )
+            # Display with no speaker name, only avatar + content
+            display_avatar_and_text(avatar_url, content)
 
     st.write("---")
+    st.write("End of the demo.")
 
 if __name__ == "__main__":
     main()
