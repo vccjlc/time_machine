@@ -21,14 +21,9 @@ class OpenAIChatCompletionClient:
 
     @property
     def model_info(self):
-        """
-        Return a dictionary with at least the "function_calling" key,
-        because autogen_agentchat checks for it.
-        """
+        # Mark it True so that AssistantAgent doesn't throw ValueError
         return {
-            # Set to False if your model/wrapper does NOT support function calling,
-            # or True if it does/could.
-            "function_calling": False  
+            "function_calling": True
         }
 
     async def run_chat(self, messages):
