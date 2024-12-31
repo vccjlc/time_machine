@@ -5,8 +5,25 @@ import re
 
 from autogen_agentchat.agents import AssistantAgent
 from autogen_agentchat.teams import SelectorGroupChat
-from autogen_ext.models.openai import OpenAIChatCompletionClient
 from autogen_agentchat.conditions import TextMentionTermination
+
+##############################################################################
+# TEMPORARY LOCAL WRAPPER for openai => "OpenAIChatCompletionClient"
+##############################################################################
+class OpenAIChatCompletionClient:
+    def __init__(self, openai_api_key, model="gpt-4", temperature=1.0):
+        openai.api_key = openai_api_key
+        self.model = model
+        self.temperature = temperature
+
+    async def run_chat(self, messages):
+        """This is just an example of what run_chat might do."""
+        response = openai.ChatCompletion.create(
+            model=self.model,
+            temperature=self.temperature,
+            messages=messages
+        )
+        return response.choices[0].message["content"]
 
 ###############################################################################
 # 1) Lists of famous individuals by category
