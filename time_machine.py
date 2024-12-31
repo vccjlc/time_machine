@@ -263,4 +263,14 @@ def main():
 
         for msg in messages:
             display_message(
-                speaker_nam
+                speaker_name=msg.source,
+                content=msg.content,
+                theme=st.session_state.theme,
+                icon=st.session_state.icon
+            )
+
+    st.write("---")
+    st.write("End of Streamlit demo.")
+
+if __name__ == "__main__":
+    main()
