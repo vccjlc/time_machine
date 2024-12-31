@@ -2,6 +2,7 @@ import os
 import random
 import asyncio
 import re
+import openai
 
 from autogen_agentchat.agents import AssistantAgent
 from autogen_agentchat.teams import SelectorGroupChat
