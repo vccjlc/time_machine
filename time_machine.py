@@ -7,9 +7,7 @@ import asyncio
 import re
 import streamlit as st
 
-# If your code complains about missing azure, add azure-core + azure-identity to requirements
 from autogen_ext.models.openai import OpenAIChatCompletionClient
-
 from autogen_agentchat.agents import AssistantAgent
 from autogen_agentchat.teams import SelectorGroupChat
 from autogen_agentchat.conditions import TextMentionTermination
@@ -41,7 +39,6 @@ FAMOUS_POLITICIANS = [
 ALL_CATEGORIES = [
     FAMOUS_PHYSICISTS,
     FAMOUS_POLITICIANS,
-    # Add the rest if you’d like
 ]
 
 ###############################################################################
@@ -93,10 +90,10 @@ async def run_famous_people_contest():
       - Two arguers
       - A Judge (one-line verdict)
     """
-    # Create the official model client
+    # 1) Create the official model client
     model_client = OpenAIChatCompletionClient(
-        api_key=st.secrets['openai']["OPENAI_API_KEY"],
-        model="gpt-4o-mini",
+        api_key=st.secrets["openai"]["OPENAI_API_KEY"],
+        model="gpt-4",  # or "gpt-3.5-turbo", etc.
         temperature=1.0
     )
 
@@ -108,7 +105,7 @@ async def run_famous_people_contest():
     god_system_message = f"""
 You are GOD.
 Output exactly one short line, then remain silent:
-"My children, let {person1} and {person2} converse about '{topic}' with a {style} flavor. 
+"My children, let {person1} and {person2} converse about '{topic}' with a {style} flavor.
 Decorator, do your job: pick a theme, choose an icon, pass it to the Host. Thank you."
 Then remain absolutely silent afterward.
 """
@@ -122,11 +119,11 @@ Then remain absolutely silent afterward.
     god_agent.display_name = "God"
 
     # B) Decorator
-    decorator_system_message = f"""
+    decorator_system_message = """
 You are the Decorator.
-Pick 'light theme' or 'dark theme' plus a cool icon.
+Pick either 'light theme' or 'dark theme' plus a fun icon.
 Then say: "Host, here is the theme and icon. Thank you."
-Remain silent afterward.
+Then remain silent.
 """
     decorator_agent = AssistantAgent(
         name="Decorator",
@@ -140,11 +137,11 @@ Remain silent afterward.
     # C) Host
     host_system_message = f"""
 You are the Host.
-1) Acknowledge the Decorator's theme/icon.
-2) Introduce {person1} and {person2}, mention the subtopic of {topic}.
-3) Prompt them to each speak ~3 short lines.
-4) Then invite the Judge: "Judge, your verdict please."
-5) After the Judge speaks, say: "Thank you everyone! THE_END."
+1) Acknowledge Decorator's theme/icon.
+2) Introduce {person1} and {person2}, mention subtopic of {topic}.
+3) Let them each speak ~3 lines.
+4) Then call Judge: "Judge, your verdict please."
+5) After Judge's verdict, say: "Thank you everyone! THE_END."
 Don't produce THE_END until after the Judge's verdict.
 """
     host_agent = AssistantAgent(
@@ -159,7 +156,7 @@ Don't produce THE_END until after the Judge's verdict.
     # D) Arguer1
     arguer1_system_message = f"""
 You are {person1}.
-Converse with {person2} about '{topic}' in {style} style.
+Converse about '{topic}' with {person2} in {style} style.
 Try to outshine them. 1-2 sentence lines. Stay in character.
 """
     arguer1_agent = AssistantAgent(
@@ -174,7 +171,7 @@ Try to outshine them. 1-2 sentence lines. Stay in character.
     # E) Arguer2
     arguer2_system_message = f"""
 You are {person2}.
-Converse with {person1} about '{topic}' in {style} style.
+Converse about '{topic}' with {person1} in {style} style.
 Try to win or impress. 1-2 sentence lines.
 Stay in character.
 """
@@ -188,15 +185,14 @@ Stay in character.
     arguer2_agent.display_name = person2
 
     # F) Judge
-    judge_system_message = f"""
+    judge_system_message = """
 You are the Judge.
-Summarize the conversation in one short line,
-then declare a winner or draw in one sentence.
-Remain silent afterward.
+Summarize in one short line, then declare a winner or a draw in exactly one sentence.
+Then remain silent.
 """
     judge_agent = AssistantAgent(
         name="Judge",
-        description="Issues a short verdict, picks a winner or draws, then silent.",
+        description="Short verdict, picks a winner or draw, then silent.",
         system_message=judge_system_message,
         model_client=model_client,
         tools=[]
@@ -214,7 +210,6 @@ Remain silent afterward.
         judge_agent
     ]
 
-    # Build the group chat
     chat = SelectorGroupChat(
         participants=participants,
         model_client=model_client,
@@ -224,22 +219,18 @@ Remain silent afterward.
 
     print("\n========== Starting the Chat ==========\n")
 
+    # 2) We'll remove the "if msg.source == 'user': continue" line,
+    #    because the returned object is now "TaskResult" (no 'source' attribute).
     async for msg in chat.run_stream(task="Dear GOD, please speak."):
-        if msg.source == "user":
-            continue
-        yield msg
+        yield msg  # yield the entire TaskResult
 
     print("\n========== End of Chat ==========\n")
-
 
 ###############################################################################
 # STREAMLIT UI
 ###############################################################################
 def display_message(speaker_name: str, content: str, theme: str, icon: str):
-    """
-    Display each message with a minimal box style.
-    If speaker is Decorator, append the icon.
-    """
+    """Display each message with minimal styling."""
     if theme == "dark theme":
         box_style = (
             "background-color: #333; color: #fff; "
@@ -279,9 +270,7 @@ def main():
         st.session_state.icon = "☀️"
 
     st.title("Time Machine")
-    st.write(
-        "Press the button below to see a conversation"
-    )
+    st.write("Click below to see a short multi-agent interplay.")
 
     if st.button("Start the Contest"):
         st.session_state.theme = "light theme"
@@ -289,32 +278,41 @@ def main():
 
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
-        messages = loop.run_until_complete(get_contest_messages())
+        tasks = loop.run_until_complete(get_contest_messages())
         loop.close()
 
-        # Look for Decorator's theme/icon references
-        for msg in messages:
-            if msg.source == "Decorator":
-                if "dark theme" in msg.content.lower():
+        # Each returned item is likely a TaskResult. Let's see what's inside:
+        # We can check, for example, .agent_name, .content, etc.
+        # We'll do something like:
+        for task_result in tasks:
+            # Try to figure out agent name & text from the TaskResult
+            agent_name = getattr(task_result, "agent_name", "UnknownAgent")
+            text_output = getattr(task_result, "content", "")
+            # Or if there's .message or something else:
+            # text_output = getattr(task_result, "message", "")
+
+            # If the Decorator changed theme/icon:
+            if agent_name == "Decorator":
+                # Check if they said "dark theme" or "light theme"
+                if "dark theme" in text_output.lower():
                     st.session_state.theme = "dark theme"
-                elif "light theme" in msg.content.lower():
+                elif "light theme" in text_output.lower():
                     st.session_state.theme = "light theme"
 
-                match = re.search(r"icon\s*'([^']+)'", msg.content)
+                match = re.search(r"icon\s*'([^']+)'", text_output)
                 if match:
                     st.session_state.icon = match.group(1)
 
-        # Display all messages
-        for msg in messages:
+            # Now show it
             display_message(
-                speaker_name=msg.source,
-                content=msg.content,
+                speaker_name=agent_name,
+                content=text_output,
                 theme=st.session_state.theme,
                 icon=st.session_state.icon
             )
 
     st.write("---")
-    st.write("End of Streamlit demo.")
+    st.write("End of the Streamlit demo.")
 
 
 if __name__ == "__main__":
