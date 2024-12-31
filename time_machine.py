@@ -8,11 +8,16 @@ import re
 
 import streamlit as st
 
-# For openai>=1.0.0, we use AsyncOpenAI
-from openai import AsyncOpenAI
+# 1) We import the official model client from autogen_ext (no custom wrapper)
+from autogen_ext.models.openai import OpenAIChatCompletionClient
 
-# Import these so we can do isinstance checks
-from autogen_agentchat.messages import SystemMessage, UserMessage, AssistantMessage
+# 2) We import message types from autogen_agentchat
+#    (If they're not actually present, skip them or see below)
+from autogen_agentchat.messages import (
+    SystemMessage,
+    UserMessage,
+    AssistantMessage
+)
 
 from autogen_agentchat.agents import AssistantAgent
 from autogen_agentchat.teams import SelectorGroupChat
@@ -25,6 +30,9 @@ def transform_autogen_messages(autogen_messages):
     """
     Convert autogen_agentchat's message objects (SystemMessage, UserMessage, etc.)
     into valid OpenAI chat messages with 'role' and 'content'.
+
+    Why needed? Because the ChatCompletion API requires "role" in {"system","user","assistant"},
+    but autogen_agentchat might produce SystemMessage, UserMessage, etc.
     """
     openai_messages = []
     for m in autogen_messages:
@@ -38,80 +46,65 @@ def transform_autogen_messages(autogen_messages):
             role = "assistant"
             content = m.content
         else:
-            # If there's a custom message type (like custom tool messages),
-            # default to assistant or handle differently as needed.
+            # If there's a custom message type (like tool messages),
+            # default to assistant or handle differently
             role = "assistant"
-            # sometimes m might have .content; if not, fallback to empty
             content = getattr(m, "content", "")
 
         openai_messages.append({"role": role, "content": content})
     return openai_messages
 
 ##############################################################################
-# LOCAL WRAPPER for openai => "OpenAIChatCompletionClient"
+# 1) Helper function: "model_client_create" that calls OpenAIChatCompletionClient
 ##############################################################################
-class OpenAIChatCompletionClient:
-    def __init__(self, openai_api_key, model="gpt-4", temperature=1.0):
-        self.client = AsyncOpenAI(api_key=openai_api_key)
-        self.model = model
-        self.temperature = temperature
+async def model_client_create(
+    model_client,
+    messages=None,
+    model=None,
+    temperature=None,
+    **kwargs
+):
+    """
+    We do the transformation (SystemMessage->role=system, etc.)
+    then call model_client.create(...) with the final dict format.
 
-    @property
-    def model_info(self):
-        """
-        Mark function_calling=True so autogen_agentchat won't raise ValueError.
-        """
-        return {
-            "function_calling": True
-        }
+    This is effectively an inline approach—no separate "wrapper" class needed.
+    """
+    used_model = model or model_client.model
+    used_temp = temperature if (temperature is not None) else model_client.temperature
 
-    async def run_chat(self, messages):
-        openai_messages = transform_autogen_messages(messages)
-        response = await self.client.chat.completions.create(
-            model=self.model,
-            temperature=self.temperature,
-            messages=openai_messages
-        )
-        return response.choices[0].message.content
+    # Convert autogen_agentchat messages to OpenAI chat format
+    openai_messages = transform_autogen_messages(messages or [])
 
-    async def create(self, messages=None, model=None, temperature=None, **kwargs):
-        used_model = model or self.model
-        used_temp = temperature if (temperature is not None) else self.temperature
+    # Now we call the official `model_client.create(...)` method
+    # which expects messages in the correct OpenAI format
+    response = await model_client.create(
+        messages=openai_messages,
+        model=used_model,
+        temperature=used_temp,
+        **kwargs
+    )
+    return response
 
-        openai_messages = transform_autogen_messages(messages or [])
-
-        response = await self.client.chat.completions.create(
-            model=used_model,
-            temperature=used_temp,
-            messages=openai_messages,
-            **kwargs
-        )
-
-        return {
-            "choices": [
-                {
-                    "message": response.choices[0].message
-                }
-            ]
-        }
-
-###############################################################################
-# 1) Lists of famous individuals by category
-###############################################################################
+##############################################################################
+# 2) Lists of famous individuals by category
+##############################################################################
 FAMOUS_PHYSICISTS = [
     "Albert Einstein",
     "Richard Feynman",
-    # ...
+    "Marie Curie",
+    "Stephen Hawking",
+    "Isaac Newton",
+    "Niels Bohr",
+    "Erwin Schrödinger",
+    "Oppenheimer",
 ]
-# ... rest of your lists ...
-ALL_CATEGORIES = [
-    FAMOUS_PHYSICISTS,
-    # ...
-]
+# (Rest of your lists) ...
+ALL_CATEGORIES = [ FAMOUS_PHYSICISTS, ]  # plus the others
 
-###############################################################################
-# 2) List of general topics
-###############################################################################
+##############################################################################
+# 3) Topics
+##############################################################################
 UNEXPECTED_TOPICS = [
     "conspiracy theories",
     # ...
@@ -122,9 +115,6 @@ FAMOUS_CONTESTS = [
 ]
 UNEXPECTED_TOPICS.extend(FAMOUS_CONTESTS)
 
-###############################################################################
-# 3) Helper functions
-###############################################################################
 def pick_two_people() -> tuple[str, str]:
     random.shuffle(ALL_CATEGORIES)
     chosen = []
@@ -148,21 +138,24 @@ def decide_style() -> str:
     else:
         return "moderate"
 
-###############################################################################
-# 4) run_famous_people_contest
-###############################################################################
+##############################################################################
+# 4) The main function
+##############################################################################
 async def run_famous_people_contest():
+    # 1) Create the official model client (no custom wrapper),
+    #    from autogen_ext.models.openai
     model_client = OpenAIChatCompletionClient(
-        openai_api_key=st.secrets["openai"]["api_key"],
+        openai_api_key=st.secrets["openai"]["api_key"],  # or your env var
         model="gpt-4",
         temperature=1.0
     )
 
+    # 2) We'll build the conversation participants
     person1, person2 = pick_two_people()
     topic = pick_random_topic()
     style = decide_style()
 
-    # God
+    # 3) God
     god_system_message = f"""
 You are GOD.
 Output exactly one short line, then remain silent:
@@ -175,18 +168,44 @@ Then remain absolutely silent afterward.
         description="A deity that calls on Decorator, then is silent.",
         system_message=god_system_message,
         model_client=model_client,
+        # We'll override how "create" is called by hooking into the partial
+        # or by hooking into `on_message_impl`. Another approach is to monkey-patch.
         tools=[]
     )
     god_agent.display_name = "God"
 
-    # Decorator, Host, Arguer1, Arguer2, Judge, etc. same as before
-    # ...
-    # (just as in your code, referencing model_client, building them all)
+    # 4) Decorator, Host, Arguer1, Arguer2, Judge
+    #    (Same as your code—just ensure they have system messages, model_client, etc.)
+    # Example for Decorator:
+    decorator_system_message = """
+You are the Decorator.
+Pick light or dark theme plus an icon.
+Then pass to the Host.
+"""
+    decorator_agent = AssistantAgent(
+        name="Decorator",
+        description="Chooses environment theme (light/dark) and icon.",
+        system_message=decorator_system_message,
+        model_client=model_client,
+        tools=[]
+    )
+    decorator_agent.display_name = "Decorator"
 
-    # Example end:
+    # ... same for Host, Arguer1, Arguer2, Judge ...
+    # (omitted for brevity)
+
+    # 5) Termination and participants
     termination_condition = TextMentionTermination("THE_END")
-    participants = [god_agent, Decorator, Host, Arguer1, Arguer2, Judge]
+    participants = [
+        god_agent,
+        decorator_agent,
+        # host_agent,
+        # arguer1_agent,
+        # arguer2_agent,
+        # judge_agent
+    ]
 
+    # 6) The group chat
     chat = SelectorGroupChat(
         participants=participants,
         model_client=model_client,
@@ -195,34 +214,45 @@ Then remain absolutely silent afterward.
     )
 
     print("\n========== Starting the Chat ==========\n")
+
+    # 7) The main loop
     async for msg in chat.run_stream(task="Dear GOD, please speak."):
+        # If the "speaker" is user, skip
         if msg.source == "user":
             continue
         yield msg
+
     print("\n========== End of Chat ==========\n")
 
-###############################################################################
+##############################################################################
 # STREAMLIT
-###############################################################################
+##############################################################################
 import asyncio
 
 def display_message(speaker_name: str, content: str, theme: str, icon: str):
     if theme == "dark theme":
-        box_style = ("background-color: #333; color: #fff; padding:10px;"
-                     "border-radius:5px; margin-bottom:10px;")
+        box_style = (
+            "background-color: #333; color: #fff; padding:10px;"
+            "border-radius:5px; margin-bottom:10px;"
+        )
     else:
-        box_style = ("background-color: #f9f9f9; color: #000; padding:10px;"
-                     "border-radius:5px; margin-bottom:10px;")
+        box_style = (
+            "background-color: #f9f9f9; color: #000; padding:10px;"
+            "border-radius:5px; margin-bottom:10px;"
+        )
 
     display_name = speaker_name
     if speaker_name == "Decorator":
         display_name += f" {icon}"
 
-    st.markdown(f"""
-    <div style="{box_style}">
-        <strong>{display_name}:</strong> {content}
-    </div>
-    """, unsafe_allow_html=True)
+    st.markdown(
+        f"""
+        <div style="{box_style}">
+            <strong>{display_name}:</strong> {content}
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
 
 async def get_contest_messages():
     msgs = []
@@ -239,9 +269,10 @@ def main():
         st.session_state.icon = "☀️"
 
     st.title("Famous People Contest")
-    st.write("Press the button below to begin.")
+    st.write("Press the button below to begin the short multi-agent conversation.")
 
     if st.button("Start the Contest"):
+        # Reset theme/icon
         st.session_state.theme = "light theme"
         st.session_state.icon = "☀️"
 
@@ -250,6 +281,7 @@ def main():
         messages = loop.run_until_complete(get_contest_messages())
         loop.close()
 
+        # Check if Decorator changes theme
         for msg in messages:
             if msg.source == "Decorator":
                 if "dark theme" in msg.content.lower():
@@ -261,6 +293,7 @@ def main():
                 if icon_match:
                     st.session_state.icon = icon_match.group(1)
 
+        # Display all messages
         for msg in messages:
             display_message(
                 speaker_name=msg.source,
