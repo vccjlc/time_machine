@@ -1,7 +1,11 @@
+##########################################################
+# time_machine.py
+##########################################################
 import os
 import random
 import asyncio
 import re
+import streamlit as st
 import openai
 
 from autogen_agentchat.agents import AssistantAgent
@@ -10,8 +14,8 @@ from autogen_agentchat.conditions import TextMentionTermination
 
 ##############################################################################
 # LOCAL WRAPPER for openai => "OpenAIChatCompletionClient"
+# Using new openai>=1.0.0 interface: openai.chat.completions.acreate
 ##############################################################################
-
 class OpenAIChatCompletionClient:
     def __init__(self, openai_api_key, model="gpt-4", temperature=1.0):
         openai.api_key = openai_api_key
@@ -20,20 +24,22 @@ class OpenAIChatCompletionClient:
 
     @property
     def model_info(self):
-        # Mark function_calling=True so autogen_agentchat won't raise ValueError.
+        """
+        Mark function_calling=True so autogen_agentchat won't raise ValueError.
+        """
         return {
             "function_calling": True
         }
 
     async def run_chat(self, messages):
         """
-        Example method that autogen_agentchat might use somewhere,
-        though the library typically calls `create()` directly.
+        Some parts of autogen_agentchat may call model_client.run_chat(...).
+        We'll do the same thing as `create()` but return just text content.
         """
         response = await openai.chat.completions.acreate(
             model=self.model,
             temperature=self.temperature,
-            messages=messages
+            messages=messages,
         )
         return response.choices[0].message["content"]
 
@@ -51,29 +57,26 @@ class OpenAIChatCompletionClient:
         **kwargs
     ):
         """
-        This method is called by autogen_agentchat code like:
-            response = await model_client.create(messages=some_messages)
-        We must return a structure with a 'choices' list, each with a 'message' dict.
+        The method autogen_agentchat calls for a standard ChatCompletion.
+        Must return a dict with a "choices" list containing { "message": {...} }.
         """
         used_model = model or self.model
         used_temp = temperature if (temperature is not None) else self.temperature
 
-        # Make an async call to the OpenAI chat.completions endpoint
         response = await openai.chat.completions.acreate(
             model=used_model,
             temperature=used_temp,
-            messages=messages
+            messages=messages,
+            **kwargs
         )
-        # Return a dict that matches what autogen_agentchat expects:
+        # Return dict with "choices" so autogen_agentchat can parse response.
         return {
             "choices": [
                 {
-                    # "message" must be the entire message dict from OpenAI
-                    "message": response.choices[0].message,
+                    "message": response.choices[0].message
                 }
             ]
         }
-
 
 
 ###############################################################################
@@ -285,7 +288,7 @@ def decide_style() -> str:
 
 
 ###############################################################################
-# The ONLY main function (with one God agent, Decorator, etc.)
+# 4) Our main "run_famous_people_contest" function
 ###############################################################################
 async def run_famous_people_contest():
     """
@@ -296,9 +299,10 @@ async def run_famous_people_contest():
       - Two arguers (famous figures)
       - A Judge (one-sentence verdict)
     """
+    # Create our model client (the local wrapper)
     model_client = OpenAIChatCompletionClient(
-        openai_api_key = st.secrets["openai"]["api_key"],
-        model="gpt-4o-mini",
+        openai_api_key=st.secrets["openai"]["api_key"],
+        model="gpt-4",   # or another model name
         temperature=1.0
     )
 
@@ -306,9 +310,7 @@ async def run_famous_people_contest():
     topic = pick_random_topic()
     style = decide_style()
 
-    # -------------------------------------------------------------------------
-    # 1) God
-    # -------------------------------------------------------------------------
+    # God
     god_system_message = f"""
 You are GOD.
 Output exactly one short line, then remain silent:
@@ -326,13 +328,9 @@ Then remain absolutely silent afterward.
     )
     god_agent.display_name = "God"
 
-    # -------------------------------------------------------------------------
-    # 2) Decorator
-    # -------------------------------------------------------------------------
+    # Decorator
     theme_options = ["light theme", "dark theme"]
     chosen_theme = random.choice(theme_options)
-
-    # More icons and logic to pick an icon based on theme
     light_icons = ["☀️", "🌈", "🌟", "✨", "🌸", "🎉"]
     dark_icons = ["🌙", "🔥", "⚡", "💥", "💎", "🖤"]
     if chosen_theme == "dark theme":
@@ -346,7 +344,6 @@ You are the Decorator.
 2) Then say: "Host, here is the theme and icon. Thank you."
 After that, remain silent.
 """
-
     decorator_agent = AssistantAgent(
         name="Decorator",
         description="Chooses the environment theme (light or dark) and an icon.",
@@ -356,20 +353,18 @@ After that, remain silent.
     )
     decorator_agent.display_name = "Decorator"
 
-    # -------------------------------------------------------------------------
-    # 3) Host
-    # -------------------------------------------------------------------------
+    # Host
     host_system_message = f"""
 You are the Host.
 Your tasks:
-1) Acknowledge the Decorator's theme and icon. Then very shortly introduce {person1} (born-died year, who they were) and {person2} ((born-died year, who they were) and mention the subtopic of {topic}.
-2) Prompt them to speak. The must speak about 3 short lines each. Start with "{person1}, your turn."
+1) Acknowledge the Decorator's theme and icon. Then very briefly introduce {person1} and {person2}, 
+   mention the subtopic of {topic}.
+2) Prompt them to speak for about 3 short lines each. Start with "{person1}, your turn."
 3) After they finish, invite the Judge with: "Judge, your verdict please."
 4) After the Judge speaks, say: "Thank you everyone! THE_END."
 Do not produce "THE_END" until after the Judge's verdict.
 Stay succinct.
 """
-
     host_agent = AssistantAgent(
         name="Host",
         description="Introduces the conversation, calls the Judge, ends the show.",
@@ -379,29 +374,7 @@ Stay succinct.
     )
     host_agent.display_name = "Host"
 
-    # -------------------------------------------------------------------------
-    # 4) Arguer1 and Arguer2
-    # -------------------------------------------------------------------------
-    arguer1_system_message = f"""
-You are {person1}.
-You are conversing with {person2} about '{topic}' in a {style} style.
-Keep lines short (1-2 sentences).
-Try to outshine {person2} if it seems competitive.
-Stay in character, referencing your historical context.
-If you died before {person2} was born, ask who they are.
-If in your historical era, nobody knew about the thing that the discussion is about, ask for clarification.
-"""
-
-    arguer2_system_message = f"""
-You are {person2}.
-You are conversing with {person1} about '{topic}' in a {style} style.
-Keep lines short (1-2 sentences).
-Try to win or impress the audience.
-Stay in character, referencing your historical context.
-If you died before {person1} was born, ask who they are.
-If in your historical era, nobody knew about the thing that the discussion is about, ask for clarification.
-"""
-
+    # Arguer1
     def safe_agent_name(agent_name: str) -> str:
         last_name = agent_name.split(' ')[-1]
         tmp = re.sub(r'[^0-9a-zA-Z_]+', '', last_name)
@@ -411,6 +384,15 @@ If in your historical era, nobody knew about the thing that the discussion is ab
             tmp = "Agent_" + tmp
         return tmp
 
+    arguer1_system_message = f"""
+You are {person1}.
+You are conversing with {person2} about '{topic}' in a {style} style.
+Keep lines short (1-2 sentences).
+Try to outshine {person2} if it seems competitive.
+Stay in character, referencing your historical context.
+If you died before {person2} was born, ask who they are.
+If in your historical era, nobody knew about the modern topic, ask for clarification.
+"""
     arguer1_agent = AssistantAgent(
         name=safe_agent_name(person1),
         description=f"Represents {person1} in a possibly competitive discussion.",
@@ -420,6 +402,16 @@ If in your historical era, nobody knew about the thing that the discussion is ab
     )
     arguer1_agent.display_name = person1
 
+    # Arguer2
+    arguer2_system_message = f"""
+You are {person2}.
+You are conversing with {person1} about '{topic}' in a {style} style.
+Keep lines short (1-2 sentences).
+Try to win or impress the audience.
+Stay in character, referencing your historical context.
+If you died before {person1} was born, ask who they are.
+If in your historical era, nobody knew about the modern topic, ask for clarification.
+"""
     arguer2_agent = AssistantAgent(
         name=safe_agent_name(person2),
         description=f"Represents {person2} in a possibly competitive discussion.",
@@ -429,9 +421,7 @@ If in your historical era, nobody knew about the thing that the discussion is ab
     )
     arguer2_agent.display_name = person2
 
-    # -------------------------------------------------------------------------
-    # 5) Judge
-    # -------------------------------------------------------------------------
+    # Judge
     judge_system_message = f"""
 You are the Judge.
 Once the Host calls on you, do the following in one short block:
@@ -439,7 +429,6 @@ Once the Host calls on you, do the following in one short block:
 2) Declare a winner or a draw in exactly one sentence.
 Then remain silent.
 """
-
     judge_agent = AssistantAgent(
         name="Judge",
         description="Gives a short verdict, picks a winner or declares a draw, then is silent.",
@@ -449,11 +438,8 @@ Then remain silent.
     )
     judge_agent.display_name = "Judge"
 
-    # -------------------------------------------------------------------------
-    # 6) Termination condition: "THE_END"
-    # -------------------------------------------------------------------------
+    # We end the conversation after "THE_END"
     termination_condition = TextMentionTermination("THE_END")
-
     participants = [
         god_agent,
         decorator_agent,
@@ -483,7 +469,6 @@ Then remain silent.
 ###############################################################################
 # STREAMLIT APP
 ###############################################################################
-import streamlit as st
 
 def display_message(speaker_name: str, content: str, theme: str, icon: str):
     """
@@ -515,7 +500,7 @@ def display_message(speaker_name: str, content: str, theme: str, icon: str):
     )
 
 async def get_contest_messages():
-    """Runs the 'run_famous_people_contest' asynchronously and collects its messages."""
+    """Runs `run_famous_people_contest` asynchronously and collects messages."""
     msgs = []
     async for m in run_famous_people_contest():
         msgs.append(m)
@@ -536,7 +521,7 @@ def main():
     )
 
     if st.button("Start the Contest"):
-        # Reset session state for each new run
+        # Reset theme & icon each run
         st.session_state.theme = "light theme"
         st.session_state.icon = "☀️"
 
@@ -545,7 +530,7 @@ def main():
         messages = loop.run_until_complete(get_contest_messages())
         loop.close()
 
-        # Parse Decorator's lines to detect chosen theme & icon
+        # Parse Decorator's lines for the chosen theme & icon
         for msg in messages:
             if msg.source == "Decorator":
                 if "dark theme" in msg.content.lower():
@@ -558,7 +543,7 @@ def main():
                 if icon_match:
                     st.session_state.icon = icon_match.group(1)
 
-        # Display the messages
+        # Display the conversation
         for msg in messages:
             display_message(
                 speaker_name=msg.source,
