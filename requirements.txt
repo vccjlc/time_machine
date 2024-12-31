@@ -1,4 +1,5 @@
 autogen-agentchat==0.4.0.dev13
-autogen-ext[openai]==0.4.0.dev13
-openai>=1.0.0
+autogen_ext[openai]==0.4.0.dev13
+azure-core
 streamlit
+openai>=1.0.0
