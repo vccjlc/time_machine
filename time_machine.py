@@ -5,9 +5,6 @@ import os
 import random
 import asyncio
 import re
-import os
-os.environ["OPENAI_API_KEY"] = st.secrets["OPENAI_API_KEY"]
-
 import streamlit as st
 
 # If your code complains about missing azure, add azure-core + azure-identity to requirements
