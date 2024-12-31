@@ -278,10 +278,9 @@ def main():
     if "icon" not in st.session_state:
         st.session_state.icon = "☀️"
 
-    st.title("Famous People Contest — Streamlit")
+    st.title("Time Machine")
     st.write(
-        "Press the button below to see a short comedic or dramatic interplay "
-        "among God, a Decorator, two historical figures, a Host, and a Judge."
+        "Press the button below to see a conversation"
     )
 
     if st.button("Start the Contest"):
