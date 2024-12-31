@@ -185,7 +185,7 @@ Then remain absolutely silent afterward.
 
     # Example end:
     termination_condition = TextMentionTermination("THE_END")
-    participants = [god_agent, /* Decorator, Host, Arguer1, Arguer2, Judge */]
+    participants = [god_agent, Decorator, Host, Arguer1, Arguer2, Judge]
 
     chat = SelectorGroupChat(
         participants=participants,
