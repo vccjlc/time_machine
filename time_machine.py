@@ -371,7 +371,7 @@ Remain silent afterward.
 ###############################################################################
 # You can replace these URLs with real images, or remove if you don't want avatars.
 AVATAR_URLS = {
-    "God": "https://raw.githubusercontent.com/misc-1/gpt-avatars/main/god.png",
+    "God": "https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.christianity.com%2Fwiki%2Fgod%2Fdo-we-know-what-god-looks-like.html&psig=AOvVaw053Jg-lQ66UdBwK2lUSDq6&ust=1735761239499000&source=images&cd=vfe&opi=89978449&ved=0CBQQjRxqFwoTCMj2jNLk0ooDFQAAAAAdAAAAABAE",
     "Decorator": "https://raw.githubusercontent.com/misc-1/gpt-avatars/main/decorator.png",
     "Host": "https://raw.githubusercontent.com/misc-1/gpt-avatars/main/host.png",
     "Judge": "https://raw.githubusercontent.com/misc-1/gpt-avatars/main/judge.png",
