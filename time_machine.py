@@ -229,7 +229,7 @@ async def run_famous_people_contest():
       - A Judge (one-sentence verdict)
     """
     model_client = OpenAIChatCompletionClient(
-        openai_api_key = st.secrets["openai"]["api_key"]
+        openai_api_key = st.secrets["openai"]["api_key"],
         model="gpt-4o-mini",
         temperature=1.0
     )
