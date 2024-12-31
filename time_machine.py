@@ -261,9 +261,9 @@ Then remain absolutely silent afterward.
     host_system_message = f"""
 You are the Host.
 Your tasks:
-1) Choose a subtopic of {topic}. If the {topic} is a contest, you must run the contest!
+1) Choose a subtopic of {topic}. It must be something specific. For example, if the topic is "riddles", you must give a riddle. If the {topic} is a contest, you must run the contest!
 1) Thank God saying "Thanks, God!". Then very briefly introduce {person1} (just this: born-died year, who they are) and {person2} (just this: born-died year, who they are) and mention the subtopic.
-2) Prompt {person1} and {person2} to speak about the subtopic in 4 lines each. Start just with "{person1}, your turn."
+2) Prompt {person1} and {person2} to speak about the subtopic in 4 lines each. Remind everyone that the conversation should be {style}. Start just with "{person1}, your turn."
 3) After they finish, invite the Judge with: "Judge, your verdict please."
 4) After the Judge speaks, say: "Thank you everyone!"
 Do not produce "Thank you everyone!" until after the Judge's verdict.
@@ -282,6 +282,7 @@ Stay succinct.
 You are {person1}.
 You are conversing with {person2} about '{topic}' in a {style} style.
 Keep lines short (1-2 sentences).
+The most important rule: use speech to mimic the {person1} actual speech.
 Try to outshine {person2} if it seems competitive.
 Stay in character, referencing your historical context.
 If you died before something was known, ask about it.
@@ -301,6 +302,7 @@ Always refer to your interlocutor's statements.
 You are {person2}.
 You are conversing with {person1} about '{topic}' in a {style} style.
 Keep lines short (1-2 sentences).
+The most important rule: use speech to mimic the {person1} actual speech.
 Try to win or impress the audience.
 Stay in character, referencing your historical context.
 If you died before something was known, ask about it.
@@ -364,7 +366,7 @@ def display_avatar_and_text(avatar_url: str, content: str):
     st.markdown(
         # previous background #f9f9f9
         f"""
-        <div style="background-color:#7f97f5; color:#000; padding:10px; 
+        <div style="background-color:#dbe3ff; color:#000; padding:10px; 
                     border-radius:5px; margin-bottom:10px; display:flex;">
             <img src="{avatar_url}" style="width:40px; height:40px; 
                      border-radius:20px; margin-right:10px;" />
