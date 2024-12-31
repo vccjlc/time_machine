@@ -5,8 +5,11 @@ import os
 import random
 import asyncio
 import re
+
 import streamlit as st
-import openai
+
+# IMPORTANT: we now import AsyncOpenAI instead of using module-level openai.*
+from openai import AsyncOpenAI
 
 from autogen_agentchat.agents import AssistantAgent
 from autogen_agentchat.teams import SelectorGroupChat
@@ -14,11 +17,12 @@ from autogen_agentchat.conditions import TextMentionTermination
 
 ##############################################################################
 # LOCAL WRAPPER for openai => "OpenAIChatCompletionClient"
-# Using new openai>=1.0.0 interface: openai.chat.completions.acreate
+# using openai>=1.0.0 with AsyncOpenAI
 ##############################################################################
 class OpenAIChatCompletionClient:
     def __init__(self, openai_api_key, model="gpt-4", temperature=1.0):
-        openai.api_key = openai_api_key
+        # Create our asynchronous client
+        self.client = AsyncOpenAI(api_key=openai_api_key)
         self.model = model
         self.temperature = temperature
 
@@ -34,14 +38,14 @@ class OpenAIChatCompletionClient:
     async def run_chat(self, messages):
         """
         Some parts of autogen_agentchat may call model_client.run_chat(...).
-        We'll do the same thing as `create()` but return just text content.
+        We'll do a chat completion call and return the text content.
         """
-        response = await openai.chat.completions.acreate(
+        response = await self.client.chat.completions.create(
             model=self.model,
             temperature=self.temperature,
-            messages=messages,
+            messages=messages
         )
-        return response.choices[0].message["content"]
+        return response.choices[0].message.content
 
     async def create(
         self,
@@ -63,13 +67,15 @@ class OpenAIChatCompletionClient:
         used_model = model or self.model
         used_temp = temperature if (temperature is not None) else self.temperature
 
-        response = await openai.chat.completions.acreate(
+        # Call the async client, returning a "raw" response object
+        response = await self.client.chat.completions.create(
             model=used_model,
             temperature=used_temp,
             messages=messages,
             **kwargs
         )
-        # Return dict with "choices" so autogen_agentchat can parse response.
+
+        # Return a dict with "choices" so autogen_agentchat can parse it
         return {
             "choices": [
                 {
@@ -77,7 +83,6 @@ class OpenAIChatCompletionClient:
                 }
             ]
         }
-
 
 ###############################################################################
 # 1) Lists of famous individuals by category
@@ -197,7 +202,7 @@ ALL_CATEGORIES = [
 ]
 
 ###############################################################################
-# 2) List of general topics
+# 2) List of general topics + appended famous contests
 ###############################################################################
 UNEXPECTED_TOPICS = [
     "conspiracy theories",
@@ -244,7 +249,6 @@ UNEXPECTED_TOPICS = [
     "famous quotes",
 ]
 
-# Additional "famous contests"
 FAMOUS_CONTESTS = [
     "Jeopardy-like trivia game",
     "Duel of wits",
@@ -266,7 +270,6 @@ def pick_two_people() -> tuple[str, str]:
     random.shuffle(ALL_CATEGORIES)
     chosen = []
     used_categories = set()
-
     while len(chosen) < 2:
         cat = random.choice(ALL_CATEGORIES)
         if tuple(cat) not in used_categories:
@@ -286,7 +289,6 @@ def decide_style() -> str:
     else:
         return "moderate"
 
-
 ###############################################################################
 # 4) Our main "run_famous_people_contest" function
 ###############################################################################
@@ -302,7 +304,7 @@ async def run_famous_people_contest():
     # Create our model client (the local wrapper)
     model_client = OpenAIChatCompletionClient(
         openai_api_key=st.secrets["openai"]["api_key"],
-        model="gpt-4",   # or another model name
+        model="gpt-4",   # or whichever model you want
         temperature=1.0
     )
 
@@ -318,7 +320,6 @@ Output exactly one short line, then remain silent:
 Decorator, do your job: pick a theme, choose an icon, pass it to the Host. Thank you."
 Then remain absolutely silent afterward.
 """
-
     god_agent = AssistantAgent(
         name="God",
         description="A deity that calls on Decorator, then is silent.",
@@ -333,10 +334,7 @@ Then remain absolutely silent afterward.
     chosen_theme = random.choice(theme_options)
     light_icons = ["☀️", "🌈", "🌟", "✨", "🌸", "🎉"]
     dark_icons = ["🌙", "🔥", "⚡", "💥", "💎", "🖤"]
-    if chosen_theme == "dark theme":
-        chosen_icon = random.choice(dark_icons)
-    else:
-        chosen_icon = random.choice(light_icons)
+    chosen_icon = random.choice(dark_icons) if (chosen_theme == "dark theme") else random.choice(light_icons)
 
     decorator_system_message = f"""
 You are the Decorator.
@@ -438,7 +436,7 @@ Then remain silent.
     )
     judge_agent.display_name = "Judge"
 
-    # We end the conversation after "THE_END"
+    # End the conversation after "THE_END"
     termination_condition = TextMentionTermination("THE_END")
     participants = [
         god_agent,
@@ -465,11 +463,9 @@ Then remain silent.
 
     print("\n========== End of Contest Chat ==========\n")
 
-
 ###############################################################################
 # STREAMLIT APP
 ###############################################################################
-
 def display_message(speaker_name: str, content: str, theme: str, icon: str):
     """
     Renders a single message with basic styling based on 'theme' (light or dark).
