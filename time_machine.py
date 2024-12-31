@@ -5,6 +5,8 @@ import os
 import random
 import asyncio
 import re
+import os
+os.environ["OPENAI_API_KEY"] = st.secrets["OPENAI_API_KEY"]
 
 import streamlit as st
 
@@ -96,8 +98,8 @@ async def run_famous_people_contest():
     """
     # Create the official model client
     model_client = OpenAIChatCompletionClient(
-        openai_api_key=st.secrets["openai"]["api_key"],
-        model="gpt-4",
+        openai_api_key=st.secrets['openai']["api_key"],
+        model="gpt-4o-mini",
         temperature=1.0
     )
 
