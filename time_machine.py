@@ -11,30 +11,69 @@ from autogen_agentchat.conditions import TextMentionTermination
 ##############################################################################
 # LOCAL WRAPPER for openai => "OpenAIChatCompletionClient"
 ##############################################################################
+
 class OpenAIChatCompletionClient:
     def __init__(self, openai_api_key, model="gpt-4", temperature=1.0):
-        import openai
         openai.api_key = openai_api_key
         self.model = model
         self.temperature = temperature
-        # Optionally store any other data you want.
 
     @property
     def model_info(self):
-        # Mark it True so that AssistantAgent doesn't throw ValueError
+        # Mark function_calling=True so autogen_agentchat won't raise ValueError.
         return {
             "function_calling": True
         }
 
     async def run_chat(self, messages):
-        """Example usage of openai.ChatCompletion.create."""
-        import openai
-        response = openai.ChatCompletion.create(
+        """
+        Example method that autogen_agentchat might use somewhere,
+        though the library typically calls `create()` directly.
+        """
+        response = await openai.ChatCompletion.acreate(
             model=self.model,
             temperature=self.temperature,
             messages=messages
         )
         return response.choices[0].message["content"]
+
+    async def create(
+        self,
+        messages=None,
+        model=None,
+        temperature=None,
+        top_p=None,
+        presence_penalty=None,
+        frequency_penalty=None,
+        function_call=None,
+        functions=None,
+        stream=None,
+        **kwargs
+    ):
+        """
+        This method is called by autogen_agentchat code like:
+            response = await model_client.create(messages=some_messages)
+        We must return a structure with a 'choices' list, each with a 'message' dict.
+        """
+        used_model = model or self.model
+        used_temp = temperature if (temperature is not None) else self.temperature
+
+        # Make an async call to the OpenAI ChatCompletion endpoint
+        response = await openai.ChatCompletion.acreate(
+            model=used_model,
+            temperature=used_temp,
+            messages=messages
+        )
+        # Return a dict that matches what autogen_agentchat expects:
+        return {
+            "choices": [
+                {
+                    # "message" must be the entire message dict from OpenAI
+                    "message": response.choices[0].message,
+                }
+            ]
+        }
+
 
 
 ###############################################################################
