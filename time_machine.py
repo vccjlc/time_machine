@@ -230,7 +230,7 @@ async def run_famous_people_contest():
     """
     model_client = OpenAIChatCompletionClient(
         openai_api_key = st.secrets["openai"]["api_key"]
-        model="gpt-4",
+        model="gpt-4o-mini",
         temperature=1.0
     )
 
@@ -274,7 +274,7 @@ Then remain absolutely silent afterward.
 
     decorator_system_message = f"""
 You are the Decorator.
-1) Greet God briefly, confirm you will use '{chosen_theme}' and icon '{chosen_icon}'.
+1) Greet God briefly in a few words, and confirm you set '{chosen_theme}' and icon '{chosen_icon}'.
 2) Then say: "Host, here is the theme and icon. Thank you."
 After that, remain silent.
 """
@@ -294,8 +294,8 @@ After that, remain silent.
     host_system_message = f"""
 You are the Host.
 Your tasks:
-1) Acknowledge the Decorator's theme and icon. Then quickly introduce {person1} and {person2} and mention the subtopic of {topic}.
-2) Prompt them to speak about 3 short lines each. Start with "{person1}, your turn."
+1) Acknowledge the Decorator's theme and icon. Then very shortly introduce {person1} (born-died year, who they were) and {person2} ((born-died year, who they were) and mention the subtopic of {topic}.
+2) Prompt them to speak. The must speak about 3 short lines each. Start with "{person1}, your turn."
 3) After they finish, invite the Judge with: "Judge, your verdict please."
 4) After the Judge speaks, say: "Thank you everyone! THE_END."
 Do not produce "THE_END" until after the Judge's verdict.
@@ -320,6 +320,8 @@ You are conversing with {person2} about '{topic}' in a {style} style.
 Keep lines short (1-2 sentences).
 Try to outshine {person2} if it seems competitive.
 Stay in character, referencing your historical context.
+If you died before {person2} was born, ask who they are.
+If in your historical era, nobody knew about the thing that the discussion is about, ask for clarification.
 """
 
     arguer2_system_message = f"""
@@ -328,6 +330,8 @@ You are conversing with {person1} about '{topic}' in a {style} style.
 Keep lines short (1-2 sentences).
 Try to win or impress the audience.
 Stay in character, referencing your historical context.
+If you died before {person1} was born, ask who they are.
+If in your historical era, nobody knew about the thing that the discussion is about, ask for clarification.
 """
 
     def safe_agent_name(agent_name: str) -> str:
