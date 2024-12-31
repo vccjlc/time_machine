@@ -246,8 +246,7 @@ async def run_famous_people_contest():
     god_system_message = f"""
 You are GOD.
 Output exactly one short line, then remain silent:
-"My children, let {person1} and {person2} converse about '{topic}' with a {style} flavor. 
-Decorator, do your job: pick a theme, choose an icon, pass it to the Host. Thank you."
+"My children, let {person1} and {person2} converse about '{topic}' with a {style} flavor. Host, your turn!"
 Then remain absolutely silent afterward.
 """
     god_agent = AssistantAgent(
@@ -262,8 +261,9 @@ Then remain absolutely silent afterward.
     host_system_message = f"""
 You are the Host.
 Your tasks:
-1) Acknowledge the Decorator's theme and icon. Then quickly introduce {person1} (born-died year, who they are) and {person2} (born-died year, who they are) and mention the subtopic of {topic}.
-2) Prompt them to speak about 3 short lines each. Start with "{person1}, your turn."
+1) Choose a subtopic of {topic}. If the {topic} is a contest, you must run the contest!
+1) Thank God saying "Thanks, God!". Then very briefly introduce {person1} (just this: born-died year, who they are) and {person2} (just this: born-died year, who they are) and mention the subtopic.
+2) Prompt {person1} and {person2} to speak about the subtopic in 4 lines each. Start just with "{person1}, your turn."
 3) After they finish, invite the Judge with: "Judge, your verdict please."
 4) After the Judge speaks, say: "Thank you everyone!"
 Do not produce "Thank you everyone!" until after the Judge's verdict.
@@ -285,6 +285,8 @@ Keep lines short (1-2 sentences).
 Try to outshine {person2} if it seems competitive.
 Stay in character, referencing your historical context.
 If you died before something was known, ask about it.
+If you died before {person2} was born, ask who they are.
+Always refer to your interlocutor's statements.
 """
     arguer1_agent = AssistantAgent(
         name="Arguer1",
@@ -302,6 +304,8 @@ Keep lines short (1-2 sentences).
 Try to win or impress the audience.
 Stay in character, referencing your historical context.
 If you died before something was known, ask about it.
+If you died before {person2} was born, ask who they are.
+Always refer to your interlocutor's statements.
 """
     arguer2_agent = AssistantAgent(
         name="Arguer2",
@@ -313,7 +317,7 @@ If you died before something was known, ask about it.
 
     # 5) Judge
     judge_system_message = """
-You are the Judge.
+You are the Judge. When the Host asks you about the verdict:
 Summarize the conversation in one short line, then declare a winner or a draw. All in one sentence.
 Then remain absolutely silent.
 """
@@ -358,8 +362,9 @@ AVATAR_URLS = {
 def display_avatar_and_text(avatar_url: str, content: str):
     """Render a message with avatar, no name displayed."""
     st.markdown(
+        # previous background #f9f9f9
         f"""
-        <div style="background-color:#f9f9f9; color:#000; padding:10px; 
+        <div style="background-color:#7f97f5; color:#000; padding:10px; 
                     border-radius:5px; margin-bottom:10px; display:flex;">
             <img src="{avatar_url}" style="width:40px; height:40px; 
                      border-radius:20px; margin-right:10px;" />
@@ -379,9 +384,9 @@ def main():
     st.set_page_config(page_title="Time Machine", layout="centered")
 
     st.title("Time Machine")
-    st.write("Press the button to see the conversation.")
+    st.write("Press to see the conversation.")
 
-    if st.button("Run the Contest"):
+    if st.button("Run"):
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
         conversation_steps = loop.run_until_complete(get_contest_messages())
@@ -401,7 +406,6 @@ def main():
             display_avatar_and_text(avatar_url, content)
 
     st.write("---")
-    st.write("End of the demo.")
 
 if __name__ == "__main__":
     main()
