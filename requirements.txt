@@ -4,4 +4,3 @@ azure-core
 azure-identity
 streamlit
 openai>=1.0.0
-os
