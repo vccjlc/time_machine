@@ -8,110 +8,108 @@ import re
 
 import streamlit as st
 
-# This is the official client from autogen_ext, which references azure.*
-# so we need azure-core installed to avoid "No module named 'azure'"
+# If your code complains about missing azure, add azure-core + azure-identity to requirements
 from autogen_ext.models.openai import OpenAIChatCompletionClient
 
-from autogen_agentchat.messages import (
-    # If these aren’t actually present in your version, remove or adapt:
-    SystemMessage,
-    UserMessage,
-    AssistantMessage
-)
 from autogen_agentchat.agents import AssistantAgent
 from autogen_agentchat.teams import SelectorGroupChat
 from autogen_agentchat.conditions import TextMentionTermination
 
-##############################################################################
-# Convert autogen_agentchat messages to valid OpenAI roles
-##############################################################################
-def transform_autogen_messages(autogen_messages):
-    """
-    Convert autogen_agentchat's message objects (SystemMessage, UserMessage, etc.)
-    into valid OpenAI chat messages:  [{role: ..., content: ...}, ...].
-    """
-    openai_messages = []
-    for m in autogen_messages:
-        # Just in case your version doesn't have these classes, remove or tweak:
-        if isinstance(m, SystemMessage):
-            role = "system"
-            content = m.content
-        elif isinstance(m, UserMessage):
-            role = "user"
-            content = m.content
-        elif isinstance(m, AssistantMessage):
-            role = "assistant"
-            content = m.content
-        else:
-            # Default to assistant if it's some other custom class
-            role = "assistant"
-            content = getattr(m, "content", "")
-        openai_messages.append({"role": role, "content": content})
-    return openai_messages
+###############################################################################
+# 1) Lists of famous individuals by category
+###############################################################################
+FAMOUS_PHYSICISTS = [
+    "Albert Einstein",
+    "Richard Feynman",
+    "Marie Curie",
+    "Stephen Hawking",
+    "Isaac Newton",
+    "Niels Bohr",
+    "Erwin Schrödinger",
+    "Oppenheimer",
+]
+FAMOUS_POLITICIANS = [
+    "Donald Trump", "Donald Trump",  # Weighted for comedic effect
+    "Barack Obama",
+    "Winston Churchill",
+    "Abraham Lincoln",
+    "Margaret Thatcher",
+    "Angela Merkel",
+    "Mahatma Gandhi",
+    "Franklin D. Roosevelt",
+    "Julius Caesar",
+]
+ALL_CATEGORIES = [
+    FAMOUS_PHYSICISTS,
+    FAMOUS_POLITICIANS,
+    # Add the rest if you’d like
+]
 
-##############################################################################
-# Patching the `create` method to do the transformation automatically
-##############################################################################
-async def patched_create(self, messages=None, model=None, temperature=None, **kwargs):
-    """
-    We monkey-patch `OpenAIChatCompletionClient.create` so that any incoming
-    autogen_agentchat messages are first converted to valid OpenAI messages.
-    """
-    used_model = model or self.model
-    used_temp = temperature if (temperature is not None) else self.temperature
-    openai_messages = transform_autogen_messages(messages or [])
-    response = await self._original_create(
-        messages=openai_messages,
-        model=used_model,
-        temperature=used_temp,
-        **kwargs
-    )
-    return response
+###############################################################################
+# 2) Topics
+###############################################################################
+UNEXPECTED_TOPICS = [
+    "conspiracy theories",
+    "riddles",
+    "Jeopardy-like trivia game",
+    "Rap battle",
+]
 
-##############################################################################
-# The main run_famous_people_contest function
-##############################################################################
+###############################################################################
+# 3) Helper functions
+###############################################################################
+def pick_two_people() -> tuple[str, str]:
+    random.shuffle(ALL_CATEGORIES)
+    chosen = []
+    used_categories = set()
+
+    while len(chosen) < 2:
+        cat = random.choice(ALL_CATEGORIES)
+        if tuple(cat) not in used_categories:
+            used_categories.add(tuple(cat))
+            chosen.append(random.choice(cat))
+    return chosen[0], chosen[1]
+
+def pick_random_topic() -> str:
+    return random.choice(UNEXPECTED_TOPICS)
+
+def decide_style() -> str:
+    val = random.random()
+    if val < 0.5:
+        return "witty"
+    elif val < 0.75:
+        return "serious"
+    else:
+        return "moderate"
+
+###############################################################################
+# 4) The main multi-agent function
+###############################################################################
 async def run_famous_people_contest():
-    # 1) Create the official model client
+    """
+    Runs a short conversation among:
+      - God (one-line)
+      - Decorator (sets theme/icon)
+      - Host (introduces two famous people & calls Judge)
+      - Two arguers
+      - A Judge (one-line verdict)
+    """
+    # Create the official model client
     model_client = OpenAIChatCompletionClient(
         openai_api_key=st.secrets["openai"]["api_key"],
-        model="gpt-4",   # or your chosen model
+        model="gpt-4",
         temperature=1.0
     )
-
-    # 2) Monkey-patch its create method to inject the transformation
-    #    We'll store the original method, then override it
-    model_client._original_create = model_client.create
-    model_client.create = lambda **kwargs: patched_create(model_client, **kwargs)
-
-    # 3) Random picks
-    def pick_two_people():
-        all_famous = [["Albert Einstein", "Richard Feynman"]]
-        random.shuffle(all_famous)
-        return all_famous[0][0], all_famous[0][1]
-
-    def pick_random_topic():
-        topics = ["conspiracy theories", "Jeopardy-like trivia game"]
-        return random.choice(topics)
-
-    def decide_style():
-        val = random.random()
-        if val < 0.5:
-            return "witty"
-        elif val < 0.75:
-            return "serious"
-        else:
-            return "moderate"
 
     person1, person2 = pick_two_people()
     topic = pick_random_topic()
     style = decide_style()
 
-    # 4) God agent
+    # A) God
     god_system_message = f"""
 You are GOD.
 Output exactly one short line, then remain silent:
-"My children, let {person1} and {person2} converse about '{topic}' in {style} style.
+"My children, let {person1} and {person2} converse about '{topic}' with a {style} flavor. 
 Decorator, do your job: pick a theme, choose an icon, pass it to the Host. Thank you."
 Then remain absolutely silent afterward.
 """
@@ -124,38 +122,47 @@ Then remain absolutely silent afterward.
     )
     god_agent.display_name = "God"
 
-    # 5) Decorator agent
-    decorator_system_message = """
+    # B) Decorator
+    decorator_system_message = f"""
 You are the Decorator.
-Pick 'light theme' or 'dark theme' plus an icon. Then say: "Host, here is the theme and icon. Thank you."
-Afterwards, remain silent.
+Pick 'light theme' or 'dark theme' plus a cool icon.
+Then say: "Host, here is the theme and icon. Thank you."
+Remain silent afterward.
 """
     decorator_agent = AssistantAgent(
         name="Decorator",
-        description="Chooses environment theme and icon.",
+        description="Chooses environment theme/icon, then silent.",
         system_message=decorator_system_message,
         model_client=model_client,
         tools=[]
     )
     decorator_agent.display_name = "Decorator"
 
-    # 6) Host, Arguer1, Arguer2, Judge (for brevity, we’ll just do the Host)
+    # C) Host
     host_system_message = f"""
 You are the Host.
-Acknowledge Decorator, introduce {person1} and {person2}, mention {topic}.
-Prompt them for 3 lines each. Then call the Judge. Then end with THE_END after verdict.
+1) Acknowledge the Decorator's theme/icon.
+2) Introduce {person1} and {person2}, mention the subtopic of {topic}.
+3) Prompt them to each speak ~3 short lines.
+4) Then invite the Judge: "Judge, your verdict please."
+5) After the Judge speaks, say: "Thank you everyone! THE_END."
+Don't produce THE_END until after the Judge's verdict.
 """
     host_agent = AssistantAgent(
         name="Host",
-        description="Introduces the conversation, calls the Judge, ends the show.",
+        description="Introduces conversation, calls Judge, ends show.",
         system_message=host_system_message,
         model_client=model_client,
         tools=[]
     )
     host_agent.display_name = "Host"
 
-    # 7) Arguer1 & Arguer2
-    arguer1_system_message = f"You are {person1}. Keep lines short. Remain witty."
+    # D) Arguer1
+    arguer1_system_message = f"""
+You are {person1}.
+Converse with {person2} about '{topic}' in {style} style.
+Try to outshine them. 1-2 sentence lines. Stay in character.
+"""
     arguer1_agent = AssistantAgent(
         name="Arguer1",
         description=f"Represents {person1}.",
@@ -165,7 +172,13 @@ Prompt them for 3 lines each. Then call the Judge. Then end with THE_END after v
     )
     arguer1_agent.display_name = person1
 
-    arguer2_system_message = f"You are {person2}. Keep lines short. Try to outshine {person1}."
+    # E) Arguer2
+    arguer2_system_message = f"""
+You are {person2}.
+Converse with {person1} about '{topic}' in {style} style.
+Try to win or impress. 1-2 sentence lines.
+Stay in character.
+"""
     arguer2_agent = AssistantAgent(
         name="Arguer2",
         description=f"Represents {person2}.",
@@ -175,22 +188,23 @@ Prompt them for 3 lines each. Then call the Judge. Then end with THE_END after v
     )
     arguer2_agent.display_name = person2
 
-    # 8) Judge
-    judge_system_message = """
+    # F) Judge
+    judge_system_message = f"""
 You are the Judge.
-Summarize in one short line and declare a winner or draw in one sentence.
-Then remain silent.
+Summarize the conversation in one short line,
+then declare a winner or draw in one sentence.
+Remain silent afterward.
 """
     judge_agent = AssistantAgent(
         name="Judge",
-        description="Gives short verdict, picks winner or draw, then silent.",
+        description="Issues a short verdict, picks a winner or draws, then silent.",
         system_message=judge_system_message,
         model_client=model_client,
         tools=[]
     )
     judge_agent.display_name = "Judge"
 
-    # 9) Termination
+    # G) Termination condition
     termination_condition = TextMentionTermination("THE_END")
     participants = [
         god_agent,
@@ -201,6 +215,7 @@ Then remain silent.
         judge_agent
     ]
 
+    # Build the group chat
     chat = SelectorGroupChat(
         participants=participants,
         model_client=model_client,
@@ -217,14 +232,25 @@ Then remain silent.
 
     print("\n========== End of Chat ==========\n")
 
-##############################################################################
+
+###############################################################################
 # STREAMLIT UI
-##############################################################################
+###############################################################################
 def display_message(speaker_name: str, content: str, theme: str, icon: str):
+    """
+    Display each message with a minimal box style.
+    If speaker is Decorator, append the icon.
+    """
     if theme == "dark theme":
-        box_style = "background-color: #333; color: #fff; padding:10px; border-radius:5px; margin-bottom:10px;"
+        box_style = (
+            "background-color: #333; color: #fff; "
+            "padding: 10px; border-radius: 5px; margin-bottom: 10px;"
+        )
     else:
-        box_style = "background-color: #f9f9f9; color: #000; padding:10px; border-radius:5px; margin-bottom:10px;"
+        box_style = (
+            "background-color: #f9f9f9; color: #000; "
+            "padding: 10px; border-radius: 5px; margin-bottom: 10px;"
+        )
 
     display_name = speaker_name
     if speaker_name == "Decorator":
@@ -253,8 +279,11 @@ def main():
     if "icon" not in st.session_state:
         st.session_state.icon = "☀️"
 
-    st.title("Famous People Contest")
-    st.write("Press the button below to see a short comedic or dramatic interplay among God, a Decorator, two historical figures, a Host, and a Judge!")
+    st.title("Famous People Contest — Streamlit")
+    st.write(
+        "Press the button below to see a short comedic or dramatic interplay "
+        "among God, a Decorator, two historical figures, a Host, and a Judge."
+    )
 
     if st.button("Start the Contest"):
         st.session_state.theme = "light theme"
@@ -265,7 +294,7 @@ def main():
         messages = loop.run_until_complete(get_contest_messages())
         loop.close()
 
-        # Check for Decorator's theme & icon
+        # Look for Decorator's theme/icon references
         for msg in messages:
             if msg.source == "Decorator":
                 if "dark theme" in msg.content.lower():
@@ -273,11 +302,11 @@ def main():
                 elif "light theme" in msg.content.lower():
                     st.session_state.theme = "light theme"
 
-                icon_match = re.search(r"icon\s*'([^']+)'", msg.content)
-                if icon_match:
-                    st.session_state.icon = icon_match.group(1)
+                match = re.search(r"icon\s*'([^']+)'", msg.content)
+                if match:
+                    st.session_state.icon = match.group(1)
 
-        # Display messages
+        # Display all messages
         for msg in messages:
             display_message(
                 speaker_name=msg.source,
@@ -288,6 +317,7 @@ def main():
 
     st.write("---")
     st.write("End of Streamlit demo.")
+
 
 if __name__ == "__main__":
     main()
