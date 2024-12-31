@@ -246,9 +246,9 @@ async def run_famous_people_contest():
     god_system_message = f"""
 You are GOD.
 Output exactly one short line, then remain silent:
-"My children, let {person1} and {person2} speak about '{topic}' in a {style} manner.
-Host, please guide them. Thank you."
-Then remain silent afterward.
+"My children, let {person1} and {person2} converse about '{topic}' with a {style} flavor. 
+Decorator, do your job: pick a theme, choose an icon, pass it to the Host. Thank you."
+Then remain absolutely silent afterward.
 """
     god_agent = AssistantAgent(
         name="God",
@@ -261,12 +261,13 @@ Then remain silent afterward.
     # 2) Host
     host_system_message = f"""
 You are the Host.
-1) Introduce {person1} and {person2} (who they were, briefly).
-2) Mention the subtopic of {topic}.
-3) Prompt them to speak ~3 lines each.
-4) Then call the Judge: "Judge, your verdict please."
-5) After the Judge, say: "THE_END."
-Stop only after THE_END.
+Your tasks:
+1) Acknowledge the Decorator's theme and icon. Then quickly introduce {person1} (born-died year, who they are) and {person2} (born-died year, who they are) and mention the subtopic of {topic}.
+2) Prompt them to speak about 3 short lines each. Start with "{person1}, your turn."
+3) After they finish, invite the Judge with: "Judge, your verdict please."
+4) After the Judge speaks, say: "Thank you everyone!"
+Do not produce "Thank you everyone!" until after the Judge's verdict.
+Stay succinct.
 """
     host_agent = AssistantAgent(
         name="Host",
@@ -279,8 +280,11 @@ Stop only after THE_END.
     # 3) Arguer1
     arguer1_system_message = f"""
 You are {person1}.
-Engage with {person2} about '{topic}' using a {style} style.
-Keep lines short. Remain in character.
+You are conversing with {person2} about '{topic}' in a {style} style.
+Keep lines short (1-2 sentences).
+Try to outshine {person2} if it seems competitive.
+Stay in character, referencing your historical context.
+If you died before something was known, ask about it.
 """
     arguer1_agent = AssistantAgent(
         name="Arguer1",
@@ -293,8 +297,11 @@ Keep lines short. Remain in character.
     # 4) Arguer2
     arguer2_system_message = f"""
 You are {person2}.
-Engage with {person1} about '{topic}' using a {style} style.
-Try to impress or outshine them. Short lines.
+You are conversing with {person1} about '{topic}' in a {style} style.
+Keep lines short (1-2 sentences).
+Try to win or impress the audience.
+Stay in character, referencing your historical context.
+If you died before something was known, ask about it.
 """
     arguer2_agent = AssistantAgent(
         name="Arguer2",
@@ -307,7 +314,7 @@ Try to impress or outshine them. Short lines.
     # 5) Judge
     judge_system_message = """
 You are the Judge.
-Summarize in one short line, then declare a winner or a draw in one sentence.
+Summarize the conversation in one short line, then declare a winner or a draw. All in one sentence.
 Then remain absolutely silent.
 """
     judge_agent = AssistantAgent(
@@ -318,8 +325,8 @@ Then remain absolutely silent.
         tools=[]
     )
 
-    # 6) Termination after "THE_END"
-    termination_condition = TextMentionTermination("THE_END")
+    # 6) Termination after "Thank you everyone!"
+    termination_condition = TextMentionTermination("Thank you everyone!")
     participants = [god_agent, host_agent, arguer1_agent, arguer2_agent, judge_agent]
 
     chat = SelectorGroupChat(
@@ -329,7 +336,7 @@ Then remain absolutely silent.
         termination_condition=termination_condition
     )
 
-    async for msg in chat.run_stream(task="Dear GOD, please speak."):
+    async for msg in chat.run_stream(task="Dear God, please speak!"):
         yield msg  # yield each conversation step
 
 ###############################################################################
@@ -337,12 +344,12 @@ Then remain absolutely silent.
 ###############################################################################
 # Replace these with your own URLs. If participant not found, fallback used.
 AVATAR_URLS = {
-    "God": "https://imgur.com/wyw9Hrf",
+    "God": "https://i.imgur.com/wyw9Hrf.png",
     "Host": "https://example.com/host.png",
     "Arguer1": "https://example.com/arg1.png",
     "Arguer2": "https://example.com/arg2.png",
     "Judge": "https://example.com/judge.png",
-    "fallback": "https://imgur.com/wyw9Hrf",
+    "fallback": "https://i.imgur.com/wyw9Hrf.png",
 }
 
 ###############################################################################
@@ -371,8 +378,8 @@ async def get_contest_messages():
 def main():
     st.set_page_config(page_title="Time Machine", layout="centered")
 
-    st.title("Time Machine — Simplified")
-    st.write("A short conversation between God, a Host, two arguers, and a Judge. Decorator is removed.")
+    st.title("Time Machine")
+    st.write("Press the button to see the conversation.")
 
     if st.button("Run the Contest"):
         loop = asyncio.new_event_loop()
