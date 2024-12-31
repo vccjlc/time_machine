@@ -7,7 +7,6 @@ import asyncio
 import re
 import streamlit as st
 
-# os.environ["OPENAI_API_KEY"] = st.secrets["OPENAI_API_KEY"]
 # If your code complains about missing azure, add azure-core + azure-identity to requirements
 from autogen_ext.models.openai import OpenAIChatCompletionClient
 
