@@ -8,7 +8,7 @@ import re
 
 import streamlit as st
 
-# IMPORTANT: we now import AsyncOpenAI instead of using module-level openai.*
+# We use the new openai>=1.0.0 interface with an async client
 from openai import AsyncOpenAI
 
 from autogen_agentchat.agents import AssistantAgent
@@ -16,8 +16,34 @@ from autogen_agentchat.teams import SelectorGroupChat
 from autogen_agentchat.conditions import TextMentionTermination
 
 ##############################################################################
+# 0) Helper: transform autogen messages -> OpenAI chat format
+##############################################################################
+def transform_autogen_messages(autogen_messages):
+    """
+    Convert autogen_agentchat's message format into valid OpenAI messages.
+    Each autogen message typically has: {"speaker": <agent_name>, "content": "..."}
+    We must map speaker to one of {"system","user","assistant"} and keep the content.
+    """
+    openai_messages = []
+    for m in autogen_messages:
+        speaker = m.get("speaker", "").lower()  # e.g. "God", "Decorator", "Host", "user", ...
+        content = m.get("content", "")
+
+        if speaker in ["system", "god", "decorator", "host", "judge"]:
+            role = "system"
+        elif speaker == "user":
+            role = "user"
+        else:
+            # e.g. "assistant", or one of the arguers like "Donald Trump", etc.
+            # We'll default to "assistant" for any other speaker
+            role = "assistant"
+
+        openai_messages.append({"role": role, "content": content})
+    return openai_messages
+
+
+##############################################################################
 # LOCAL WRAPPER for openai => "OpenAIChatCompletionClient"
-# using openai>=1.0.0 with AsyncOpenAI
 ##############################################################################
 class OpenAIChatCompletionClient:
     def __init__(self, openai_api_key, model="gpt-4", temperature=1.0):
@@ -40,10 +66,11 @@ class OpenAIChatCompletionClient:
         Some parts of autogen_agentchat may call model_client.run_chat(...).
         We'll do a chat completion call and return the text content.
         """
+        openai_messages = transform_autogen_messages(messages)
         response = await self.client.chat.completions.create(
             model=self.model,
             temperature=self.temperature,
-            messages=messages
+            messages=openai_messages
         )
         return response.choices[0].message.content
 
@@ -63,19 +90,21 @@ class OpenAIChatCompletionClient:
         """
         The method autogen_agentchat calls for a standard ChatCompletion.
         Must return a dict with a "choices" list containing { "message": {...} }.
+        We'll transform 'messages' into valid OpenAI chat messages first.
         """
         used_model = model or self.model
         used_temp = temperature if (temperature is not None) else self.temperature
 
-        # Call the async client, returning a "raw" response object
+        # Convert autogen's messages to openai-friendly format
+        openai_messages = transform_autogen_messages(messages or [])
+
         response = await self.client.chat.completions.create(
             model=used_model,
             temperature=used_temp,
-            messages=messages,
+            messages=openai_messages,
             **kwargs
         )
 
-        # Return a dict with "choices" so autogen_agentchat can parse it
         return {
             "choices": [
                 {
@@ -83,6 +112,7 @@ class OpenAIChatCompletionClient:
                 }
             ]
         }
+
 
 ###############################################################################
 # 1) Lists of famous individuals by category
@@ -202,7 +232,7 @@ ALL_CATEGORIES = [
 ]
 
 ###############################################################################
-# 2) List of general topics + appended famous contests
+# 2) List of general topics (+ appended contests)
 ###############################################################################
 UNEXPECTED_TOPICS = [
     "conspiracy theories",
@@ -289,22 +319,22 @@ def decide_style() -> str:
     else:
         return "moderate"
 
+
 ###############################################################################
-# 4) Our main "run_famous_people_contest" function
+# 4) The main async function
 ###############################################################################
 async def run_famous_people_contest():
     """
     Runs a conversation with:
       - God (asks Decorator to do their job)
-      - Decorator (picks light/dark theme + icon)
-      - Host (introduces the arguers and calls the Judge)
-      - Two arguers (famous figures)
-      - A Judge (one-sentence verdict)
+      - Decorator (theme + icon)
+      - Host
+      - Two arguers
+      - Judge
     """
-    # Create our model client (the local wrapper)
     model_client = OpenAIChatCompletionClient(
         openai_api_key=st.secrets["openai"]["api_key"],
-        model="gpt-4",   # or whichever model you want
+        model="gpt-4",
         temperature=1.0
     )
 
@@ -320,6 +350,7 @@ Output exactly one short line, then remain silent:
 Decorator, do your job: pick a theme, choose an icon, pass it to the Host. Thank you."
 Then remain absolutely silent afterward.
 """
+
     god_agent = AssistantAgent(
         name="God",
         description="A deity that calls on Decorator, then is silent.",
@@ -338,13 +369,14 @@ Then remain absolutely silent afterward.
 
     decorator_system_message = f"""
 You are the Decorator.
-1) Greet God briefly in a few words, and confirm you set '{chosen_theme}' and icon '{chosen_icon}'.
+1) Greet God briefly, confirming you set '{chosen_theme}' and icon '{chosen_icon}'.
 2) Then say: "Host, here is the theme and icon. Thank you."
 After that, remain silent.
 """
+
     decorator_agent = AssistantAgent(
         name="Decorator",
-        description="Chooses the environment theme (light or dark) and an icon.",
+        description="Chooses environment theme (light/dark) and icon.",
         system_message=decorator_system_message,
         model_client=model_client,
         tools=[]
@@ -355,13 +387,12 @@ After that, remain silent.
     host_system_message = f"""
 You are the Host.
 Your tasks:
-1) Acknowledge the Decorator's theme and icon. Then very briefly introduce {person1} and {person2}, 
-   mention the subtopic of {topic}.
-2) Prompt them to speak for about 3 short lines each. Start with "{person1}, your turn."
-3) After they finish, invite the Judge with: "Judge, your verdict please."
-4) After the Judge speaks, say: "Thank you everyone! THE_END."
-Do not produce "THE_END" until after the Judge's verdict.
-Stay succinct.
+1) Acknowledge the Decorator's theme and icon, then very briefly introduce {person1} and {person2}.
+2) Mention subtopic of {topic}.
+3) Prompt them for ~3 short lines each, starting "{person1}, your turn."
+4) After they finish, say "Judge, your verdict please."
+5) After Judge speaks, say: "Thank you everyone! THE_END."
+Don't produce THE_END until after Judge's verdict.
 """
     host_agent = AssistantAgent(
         name="Host",
@@ -386,14 +417,12 @@ Stay succinct.
 You are {person1}.
 You are conversing with {person2} about '{topic}' in a {style} style.
 Keep lines short (1-2 sentences).
-Try to outshine {person2} if it seems competitive.
-Stay in character, referencing your historical context.
-If you died before {person2} was born, ask who they are.
-If in your historical era, nobody knew about the modern topic, ask for clarification.
+Try to outshine {person2} if competitive.
+Stay in character, referencing your era.
 """
     arguer1_agent = AssistantAgent(
         name=safe_agent_name(person1),
-        description=f"Represents {person1} in a possibly competitive discussion.",
+        description=f"Represents {person1}",
         system_message=arguer1_system_message,
         model_client=model_client,
         tools=[]
@@ -405,14 +434,12 @@ If in your historical era, nobody knew about the modern topic, ask for clarifica
 You are {person2}.
 You are conversing with {person1} about '{topic}' in a {style} style.
 Keep lines short (1-2 sentences).
-Try to win or impress the audience.
-Stay in character, referencing your historical context.
-If you died before {person1} was born, ask who they are.
-If in your historical era, nobody knew about the modern topic, ask for clarification.
+Try to win or impress.
+Stay in character, referencing your era.
 """
     arguer2_agent = AssistantAgent(
         name=safe_agent_name(person2),
-        description=f"Represents {person2} in a possibly competitive discussion.",
+        description=f"Represents {person2}",
         system_message=arguer2_system_message,
         model_client=model_client,
         tools=[]
@@ -420,23 +447,22 @@ If in your historical era, nobody knew about the modern topic, ask for clarifica
     arguer2_agent.display_name = person2
 
     # Judge
-    judge_system_message = f"""
+    judge_system_message = """
 You are the Judge.
-Once the Host calls on you, do the following in one short block:
-1) Summarize the conversation in one short line.
-2) Declare a winner or a draw in exactly one sentence.
-Then remain silent.
+When called, summarize in one short line,
+then declare a winner or draw in exactly one sentence.
+Remain silent afterwards.
 """
     judge_agent = AssistantAgent(
         name="Judge",
-        description="Gives a short verdict, picks a winner or declares a draw, then is silent.",
+        description="Gives a short verdict, picks a winner or declares draw, then silent.",
         system_message=judge_system_message,
         model_client=model_client,
         tools=[]
     )
     judge_agent.display_name = "Judge"
 
-    # End the conversation after "THE_END"
+    # End when "THE_END"
     termination_condition = TextMentionTermination("THE_END")
     participants = [
         god_agent,
@@ -463,24 +489,19 @@ Then remain silent.
 
     print("\n========== End of Contest Chat ==========\n")
 
+
 ###############################################################################
-# STREAMLIT APP
+# STREAMLIT UI
 ###############################################################################
 def display_message(speaker_name: str, content: str, theme: str, icon: str):
     """
-    Renders a single message with basic styling based on 'theme' (light or dark).
-    'icon' can be appended after the Decorator's name or used differently.
+    Render a single message box with style based on `theme`.
+    Append icon if the speaker is "Decorator".
     """
     if theme == "dark theme":
-        box_style = (
-            "background-color: #333; color: #fff; "
-            "padding: 10px; border-radius: 5px; margin-bottom: 10px;"
-        )
+        box_style = "background-color: #333; color: #fff; padding:10px; border-radius:5px; margin-bottom:10px;"
     else:
-        box_style = (
-            "background-color: #f9f9f9; color: #000; "
-            "padding: 10px; border-radius: 5px; margin-bottom: 10px;"
-        )
+        box_style = "background-color: #f9f9f9; color: #000; padding:10px; border-radius:5px; margin-bottom:10px;"
 
     display_name = speaker_name
     if speaker_name == "Decorator":
@@ -496,7 +517,9 @@ def display_message(speaker_name: str, content: str, theme: str, icon: str):
     )
 
 async def get_contest_messages():
-    """Runs `run_famous_people_contest` asynchronously and collects messages."""
+    """
+    Run the run_famous_people_contest() asynchronously and collect all messages.
+    """
     msgs = []
     async for m in run_famous_people_contest():
         msgs.append(m)
@@ -510,14 +533,10 @@ def main():
     if "icon" not in st.session_state:
         st.session_state.icon = "☀️"
 
-    st.title("Famous People Contest — Streamlit App")
-    st.write(
-        "Press the button below to see a short dialogue among God, "
-        "a Decorator, two historical figures, a Host, and a Judge."
-    )
+    st.title("Famous People Contest — Streamlit")
+    st.write("Click the button to start a short conversation with God, a Decorator, two historical figures, a Host, and a Judge.")
 
     if st.button("Start the Contest"):
-        # Reset theme & icon each run
         st.session_state.theme = "light theme"
         st.session_state.icon = "☀️"
 
@@ -526,7 +545,7 @@ def main():
         messages = loop.run_until_complete(get_contest_messages())
         loop.close()
 
-        # Parse Decorator's lines for the chosen theme & icon
+        # Check Decorator for theme & icon
         for msg in messages:
             if msg.source == "Decorator":
                 if "dark theme" in msg.content.lower():
@@ -534,12 +553,11 @@ def main():
                 elif "light theme" in msg.content.lower():
                     st.session_state.theme = "light theme"
 
-                # Extract icon
                 icon_match = re.search(r"icon\s*'([^']+)'", msg.content)
                 if icon_match:
                     st.session_state.icon = icon_match.group(1)
 
-        # Display the conversation
+        # Display messages
         for msg in messages:
             display_message(
                 speaker_name=msg.source,
@@ -550,7 +568,6 @@ def main():
 
     st.write("---")
     st.write("End of Streamlit demo.")
-
 
 if __name__ == "__main__":
     main()
