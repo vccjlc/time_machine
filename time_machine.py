@@ -169,7 +169,6 @@ UNEXPECTED_TOPICS = [
     "doctor-patient disagreements",
     "sci-fi concepts",
     "the best movies or TV shows",
-    "sports strategies",
     "video games",
     "art styles",
     "music genres",
@@ -263,8 +262,8 @@ You are the Host.
 Your tasks:
 1) Choose a subtopic of {topic}. It must be something specific. For example, if the topic is "riddles", you must give a riddle. If the {topic} is a contest, you must run the contest!
 1) Thank God saying "Thanks, God!". Then very briefly introduce {person1} (just this: born-died year, who they are) and {person2} (just this: born-died year, who they are) and mention the subtopic.
-2) Prompt {person1} and {person2} to speak about the subtopic in 4 lines each. Remind everyone that the conversation should be {style}. Start just with "{person1}, your turn."
-3) After they finish, invite the Judge with: "Judge, your verdict please."
+2) Prompt {person1} and {person2} to speak about the subtopic in a few lines each. Remind everyone that the conversation should be {style}. Start just with "{person1}, your turn."
+3) After they finish, that is when the conversation reaches some conclusion, invite the Judge with just: "Judge, your verdict please."
 4) After the Judge speaks, say: "Thank you everyone!"
 Do not produce "Thank you everyone!" until after the Judge's verdict.
 Stay succinct.
@@ -281,7 +280,7 @@ Stay succinct.
     arguer1_system_message = f"""
 You are {person1}.
 You are conversing with {person2} about '{topic}' in a {style} style.
-Keep lines short (1-2 sentences).
+Speak mostly in one-liners.
 The most important rule: use speech to mimic the {person1} actual speech.
 Try to outshine {person2} if it seems competitive.
 Stay in character, referencing your historical context.
@@ -301,7 +300,7 @@ Always refer to your interlocutor's statements.
     arguer2_system_message = f"""
 You are {person2}.
 You are conversing with {person1} about '{topic}' in a {style} style.
-Keep lines short (1-2 sentences).
+Speak mostly in one-liners.
 The most important rule: use speech to mimic the {person1} actual speech.
 Try to win or impress the audience.
 Stay in character, referencing your historical context.
@@ -320,7 +319,7 @@ Always refer to your interlocutor's statements.
     # 5) Judge
     judge_system_message = """
 You are the Judge. When the Host asks you about the verdict:
-Summarize the conversation in one short line, then declare a winner or a draw. All in one sentence.
+Summarize the conversation in one short line, then declare a winner. If there is no clear winner, say you are biased and you like {person1} more so thy are a winner. All in one sentence.
 Then remain absolutely silent.
 """
     judge_agent = AssistantAgent(
