@@ -95,7 +95,7 @@ async def run_famous_people_contest():
     """
     # Create the official model client
     model_client = OpenAIChatCompletionClient(
-        openai_api_key=st.secrets['openai']["OPENAI_API_KEY"],
+        api_key=st.secrets['openai']["OPENAI_API_KEY"],
         model="gpt-4o-mini",
         temperature=1.0
     )
