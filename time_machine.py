@@ -25,6 +25,7 @@ FAMOUS_PHYSICISTS = [
     "Erwin Schrödinger",
     "Oppenheimer",
 ]
+
 FAMOUS_POLITICIANS = [
     "Donald Trump", "Donald Trump",  # Weighted for comedic effect
     "Barack Obama",
@@ -36,9 +37,96 @@ FAMOUS_POLITICIANS = [
     "Franklin D. Roosevelt",
     "Julius Caesar",
 ]
+
+FAMOUS_MATHEMATICIANS = [
+    "Alan Turing",
+    "Ada Lovelace",
+    "Leonhard Euler",
+    "Carl Friedrich Gauss",
+    "Euclid",
+    "Srinivasa Ramanujan",
+]
+
+FAMOUS_PHILOSOPHERS = [
+    "Plato",
+    "Aristotle",
+    "Friedrich Nietzsche",
+    "Immanuel Kant",
+    "Michel Foucault",
+    "Simone de Beauvoir",
+]
+
+FAMOUS_SPORTS_PEOPLE = [
+    "Michael Jordan",
+    "Muhammad Ali",
+    "Serena Williams",
+    "Lionel Messi",
+    "Roger Federer",
+    "Cristiano Ronaldo",
+]
+
+FAMOUS_CELEBRITIES = [
+    "Oprah Winfrey",
+    "Kim Kardashian",
+    "Dwayne Johnson",
+    "Taylor Swift",
+    "Beyoncé",
+    "Tom Hanks",
+]
+
+FAMOUS_US_PRESIDENTS = [
+    "George Washington",
+    "Thomas Jefferson",
+    "Theodore Roosevelt",
+    "John F. Kennedy",
+    "Joe Biden",
+]
+
+OTHER_GREAT_PEOPLE = [
+    "William Shakespeare",
+    "Leonardo da Vinci",
+    "Napoleon Bonaparte",
+    "Cleopatra",
+    "Alexander the Great",
+    "Genghis Khan",
+]
+
+FAMOUS_ASTRONAUTS = [
+    "Neil Armstrong",
+    "Buzz Aldrin",
+    "Yuri Gagarin",
+    "Sally Ride",
+    "Chris Hadfield",
+]
+
+FAMOUS_EXPLORERS = [
+    "Christopher Columbus",
+    "Marco Polo",
+    "Ferdinand Magellan",
+    "Zheng He",
+    "Roald Amundsen",
+]
+
+FAMOUS_COMPOSERS = [
+    "Ludwig van Beethoven",
+    "Wolfgang Amadeus Mozart",
+    "Johann Sebastian Bach",
+    "Frédéric Chopin",
+    "Pyotr Tchaikovsky",
+]
+
 ALL_CATEGORIES = [
     FAMOUS_PHYSICISTS,
     FAMOUS_POLITICIANS,
+    FAMOUS_MATHEMATICIANS,
+    FAMOUS_PHILOSOPHERS,
+    FAMOUS_SPORTS_PEOPLE,
+    FAMOUS_CELEBRITIES,
+    FAMOUS_US_PRESIDENTS,
+    OTHER_GREAT_PEOPLE,
+    FAMOUS_ASTRONAUTS,
+    FAMOUS_EXPLORERS,
+    FAMOUS_COMPOSERS,
 ]
 
 ###############################################################################
@@ -46,10 +134,62 @@ ALL_CATEGORIES = [
 ###############################################################################
 UNEXPECTED_TOPICS = [
     "conspiracy theories",
+    "paradoxes",
     "riddles",
-    "Jeopardy-like trivia game",
-    "Rap battle",
+    "unbelievable facts",
+    "challenges and experiments",
+    "controversial topics",
+    "how-to guides",
+    "content creators",
+    "social media platforms",
+    "history with irony",
+    "fun facts that sound unbelievable",
+    "statistical facts",
+    "polarizing topics",
+    "escape room strategies",
+    "war strategies",
+    "the meaning or plot of a book",
+    "escape prison scenarios",
+    "hypothetical situations",
+    "quirks in legal systems",
+    "food and unusual dishes",
+    "would you rather scenarios",
+    "simple probability theory",
+    "simple riddles",
+    "math puzzles",
+    "historical facts",
+    "trivia questions",
+    "corporate dynamics",
+    "startup strategies",
+    "negotiating a big contract",
+    "diplomatic negotiations",
+    "debating for a presidential seat",
+    "religious doctrines",
+    "family vacation plans",
+    "doctor-patient disagreements",
+    "sci-fi concepts",
+    "the best movies or TV shows",
+    "sports strategies",
+    "video games",
+    "art styles",
+    "music genres",
+    "technology trends",
+    "famous quotes",
 ]
+
+FAMOUS_CONTESTS = [
+    "Jeopardy-like trivia game",
+    "Duel of wits",
+    "Rap battle",
+    "Chess match",
+    "Cooking showdown",
+    "Rock-paper-scissors",
+    "Talent show competition",
+    "Arm-wrestling match",
+    "Baking contest",
+]
+
+UNEXPECTED_TOPICS.extend(FAMOUS_CONTESTS)
 
 ###############################################################################
 # 3) Helper functions
@@ -105,7 +245,7 @@ async def run_famous_people_contest():
     god_system_message = f"""
 You are GOD.
 Output exactly one short line, then remain silent:
-"My children, let {person1} and {person2} converse about '{topic}' with a {style} flavor.
+"My children, let {person1} and {person2} converse about '{topic}' with a {style} flavor. 
 Decorator, do your job: pick a theme, choose an icon, pass it to the Host. Thank you."
 Then remain absolutely silent afterward.
 """
@@ -121,9 +261,9 @@ Then remain absolutely silent afterward.
     # B) Decorator
     decorator_system_message = """
 You are the Decorator.
-Pick either 'light theme' or 'dark theme' plus a fun icon.
-Then say: "Host, here is the theme and icon. Thank you."
-Then remain silent.
+1) Greet God briefly, confirm you will use '{chosen_theme}' and icon '{chosen_icon}'.
+2) Then say: "Host, here is the theme and icon. Thank you."
+After that, remain silent.
 """
     decorator_agent = AssistantAgent(
         name="Decorator",
@@ -137,12 +277,13 @@ Then remain silent.
     # C) Host
     host_system_message = f"""
 You are the Host.
-1) Acknowledge Decorator's theme/icon.
-2) Introduce {person1} and {person2}, mention subtopic of {topic}.
-3) Let them each speak ~3 lines.
-4) Then call Judge: "Judge, your verdict please."
-5) After Judge's verdict, say: "Thank you everyone! THE_END."
-Don't produce THE_END until after the Judge's verdict.
+Your tasks:
+1) Acknowledge the Decorator's theme and icon. Then quickly introduce {person1} and {person2} and mention the subtopic of {topic}.
+2) Prompt them to speak about 3 short lines each. Start with "{person1}, your turn."
+3) After they finish, invite the Judge with: "Judge, your verdict please."
+4) After the Judge speaks, say: "Thank you everyone! THE_END."
+Do not produce "THE_END" until after the Judge's verdict.
+Stay succinct.
 """
     host_agent = AssistantAgent(
         name="Host",
@@ -156,8 +297,10 @@ Don't produce THE_END until after the Judge's verdict.
     # D) Arguer1
     arguer1_system_message = f"""
 You are {person1}.
-Converse about '{topic}' with {person2} in {style} style.
-Try to outshine them. 1-2 sentence lines. Stay in character.
+You are conversing with {person2} about '{topic}' in a {style} style.
+Keep lines short (1-2 sentences).
+Try to outshine {person2} if it seems competitive.
+Stay in character, referencing your historical context.
 """
     arguer1_agent = AssistantAgent(
         name="Arguer1",
@@ -171,9 +314,10 @@ Try to outshine them. 1-2 sentence lines. Stay in character.
     # E) Arguer2
     arguer2_system_message = f"""
 You are {person2}.
-Converse about '{topic}' with {person1} in {style} style.
-Try to win or impress. 1-2 sentence lines.
-Stay in character.
+You are conversing with {person1} about '{topic}' in a {style} style.
+Keep lines short (1-2 sentences).
+Try to win or impress the audience.
+Stay in character, referencing your historical context.
 """
     arguer2_agent = AssistantAgent(
         name="Arguer2",
