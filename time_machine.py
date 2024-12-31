@@ -429,8 +429,8 @@ def main():
     if "icon" not in st.session_state:
         st.session_state.icon = "☀️"
 
-    st.title("Time Machine — Multi-Agent Demo")
-    st.write("Press the button below to see a short comedic or dramatic interplay among God, a Decorator, two famous figures, a Host, and a Judge.")
+    st.title("Time Machine")
+    st.write("Press the button below to see a short interplay.")
 
     if st.button("Start the Contest"):
         # Re-initialize theme/icon each run
@@ -474,8 +474,6 @@ def main():
             )
 
     st.write("---")
-    st.write("End of Streamlit demo.")
-
 
 if __name__ == "__main__":
     main()
