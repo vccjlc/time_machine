@@ -30,7 +30,7 @@ class OpenAIChatCompletionClient:
         Example method that autogen_agentchat might use somewhere,
         though the library typically calls `create()` directly.
         """
-        response = await openai.ChatCompletion.acreate(
+        response = await openai.chat.completions.acreate(
             model=self.model,
             temperature=self.temperature,
             messages=messages
@@ -58,8 +58,8 @@ class OpenAIChatCompletionClient:
         used_model = model or self.model
         used_temp = temperature if (temperature is not None) else self.temperature
 
-        # Make an async call to the OpenAI ChatCompletion endpoint
-        response = await openai.ChatCompletion.acreate(
+        # Make an async call to the OpenAI chat.completions endpoint
+        response = await openai.chat.completions.acreate(
             model=used_model,
             temperature=used_temp,
             messages=messages
