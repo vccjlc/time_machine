@@ -362,22 +362,7 @@ Then remain absolutely silent.
 # 5) AVATARS (No names displayed, only pictures)
 ###############################################################################
 
-# 1) A dictionary for each possible real person. 
-#    The keys must match EXACT strings used in your random lists.
-PERSON_AVATARS = {
-    "Donald Trump": "https://i.imgur.com/XXXXXXXX.png",
-    "Albert Einstein": "https://i.imgur.com/XXXXXXXX.png",
-    "Marie Curie": "https://i.imgur.com/XXXXXXXX.png",
-    "Stephen Hawking": "https://i.imgur.com/XXXXXXXX.png",
-    "Isaac Newton": "https://i.imgur.com/XXXXXXXX.png",
-    "Thomas Jefferson": "https://i.imgur.com/XXXXXXXX.png",
-    "Leonardo da Vinci": "https://i.imgur.com/XXXXXXXX.png",
-    "Cleopatra": "https://i.imgur.com/XXXXXXXX.png",
-    "Napoleon Bonaparte": "https://i.imgur.com/XXXXXXXX.png",
-    # ... etc. Fill in for each name in your random lists.
-}
-
-# 2) Generic role-based avatars
+# Generic role-based avatars
 AVATAR_URLS = {
     "God": "https://i.imgur.com/wyw9Hrf.png",
     "Host": "https://i.imgur.com/Bgy4LxS.png",
@@ -388,14 +373,17 @@ AVATAR_URLS = {
     "fallback": "https://i.imgur.com/wyw9Hrf.png",
 }
 
+# If you want to map actual historical figures to custom avatars, too,
+# keep your PERSON_AVATARS dict and so on. Or skip if you only want generic roles.
+
 # Two bubble background colors (pastel blue & pastel pink)
 BUBBLE_COLORS = ["#f0f5ff", "#ffe9f0"]
 
 
 def display_avatar_and_text(avatar_url: str, content: str, index: int):
     """
-    Render a message with an avatar, no name displayed.
-    We alternate bubble colors based on 'index'.
+    Render a message bubble with an avatar. 
+    The 'index' is used to alternate bubble colors.
     """
     bg_color = BUBBLE_COLORS[index % 2]
 
@@ -423,14 +411,15 @@ def display_avatar_and_text(avatar_url: str, content: str, index: int):
         unsafe_allow_html=True
     )
 
+
 ###############################################################################
 # 6) The Streamlit UI
 ###############################################################################
 
 async def get_contest_messages():
     """
-    Just runs the multi-agent conversation (run_famous_people_contest)
-    and collects all messages. We don't change anything here.
+    Runs the multi-agent conversation from run_famous_people_contest,
+    returning all message steps. 
     """
     with st.spinner("Agents are talking"):
         msgs = []
@@ -440,7 +429,6 @@ async def get_contest_messages():
 
 
 def main():
-    # Keep your new UI as is:
     st.set_page_config(page_title="Time Machine", layout="centered")
 
     # Subtle gradient background + minimal styling
@@ -475,46 +463,39 @@ def main():
     )
 
     st.write("Press **Run** to initiate the conversation.")
-    st.write("_It may take a few seconds to generate the entire dialogue_")
+    st.write("_It may take a few seconds to generate the entire dialogue..._")
 
     if st.button("Run"):
-        # 1) run the conversation
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
         conversation_steps = loop.run_until_complete(get_contest_messages())
         loop.close()
 
-        # 2) parse 'God' message to identify the real names for Arguer1/Arguer2
-        import re
-        real_person1 = "Unknown Person1"
-        real_person2 = "Unknown Person2"
-        for msg in conversation_steps:
-            if getattr(msg, "agent_name", "") == "God":
-                # e.g. "My children, let Albert Einstein and Cleopatra ... "
-                line = getattr(msg, "content", "")
-                match = re.search(r"let (.*?) and (.*?) converse about", line)
-                if match:
-                    real_person1 = match.group(1).strip()
-                    real_person2 = match.group(2).strip()
-                break
+        # This dictionary ensures that if the library returns something
+        # like "assistant" or "", we re-map it to the correct role name
+        # that is in AVATAR_URLS.
+        name_map = {
+            "assistant": "Host",       # If your library lumps host messages as 'assistant'
+            "assistant_1": "Arguer1",  # Or "assistant-1", etc. if you see that in logs
+            "assistant_2": "Arguer2",
+            "assistant_3": "Judge",
+            "system": "God",
+            "": "fallback",
+            # ... Add more if you see different agent_name values in your debug logs
+        }
 
-        # 3) now display each message in pastel bubbles
         for i, step in enumerate(conversation_steps):
-            agent_name = getattr(step, "agent_name", "")
+            # 'step' typically has: step.agent_name, step.content, step.type, etc.
             content = getattr(step, "content", "")
+            agent_name = getattr(step, "agent_name", "")
             if not content.strip():
                 continue  # skip empty
 
-            # if Arguer1 => use real_person1's avatar from PERSON_AVATARS
-            if agent_name == "Arguer1":
-                # try to get from PERSON_AVATARS, else fallback
-                avatar_url = PERSON_AVATARS.get(real_person1, AVATAR_URLS["Arguer1"])
-            elif agent_name == "Arguer2":
-                avatar_url = PERSON_AVATARS.get(real_person2, AVATAR_URLS["Arguer2"])
-            else:
-                # e.g. God, Host, Judge, user, fallback
-                avatar_url = AVATAR_URLS.get(agent_name, AVATAR_URLS["fallback"])
+            # Apply the name_map to fix fallback issues
+            mapped_name = name_map.get(agent_name, agent_name)
+            avatar_url = AVATAR_URLS.get(mapped_name, AVATAR_URLS["fallback"])
 
+            # Display bubble
             display_avatar_and_text(avatar_url, content, i)
 
     st.write("---")
