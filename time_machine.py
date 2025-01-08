@@ -372,14 +372,14 @@ PERSON_AVATARS = {
     "Stephen Hawking": "https://i.imgur.com/XXXXXXXX.png",
     "Isaac Newton": "https://i.imgur.com/XXXXXXXX.png",
     "Thomas Jefferson": "https://i.imgur.com/XXXXXXXX.png",
-    # ... Add as many as you like
+    # ... etc.
 }
 
 # For roles like God, Host, Judge, user, or fallback
 AVATAR_URLS = {
     "God": "https://i.imgur.com/wyw9Hrf.png",       # example
     "Host": "https://i.imgur.com/Bgy4LxS.png",      # example
-    "Judge": "https://i.imgur.com/3YLTpUE.png",     # example
+    "Judge": "https://i.imgur.com/LfPuI2Q.png",     # example
     "user": "https://i.imgur.com/abLj6k4.png",      # your user avatar
     "fallback": "https://i.imgur.com/wyw9Hrf.png",  # example
 }
@@ -426,23 +426,20 @@ def display_avatar_and_text(avatar_url: str, content: str, bg_color: str):
 async def get_contest_messages():
     """
     Runs the multi-agent conversation and returns all messages.
-    We also capture person1 and person2 in st.session_state so we can 
-    properly map Arguer1 / Arguer2 to the relevant avatar.
-
-    The conversation starts with task="Dear God, please speak!" so that
-    the user effectively triggers God to speak first.
+    Using 'Dear God, please speak!' as the user prompt to start the conversation.
     """
     with st.spinner("Generating the conversation... Please wait a moment."):
         msgs = []
+        # Start conversation with user prompt
         async for m in chat.run_stream(task="Dear God, please speak!"):
             msgs.append(m)
         return msgs
 
 def main():
-    # IMPORTANT: set_page_config must be the first Streamlit command
+    # Must be first Streamlit command
     st.set_page_config(page_title="Time Machine", layout="centered")
 
-    # A bit more visible gradient background + some minimal styling
+    # Subtle gradient background + minimal styling (no custom button styling)
     st.markdown(
         """
         <style>
@@ -456,20 +453,12 @@ def main():
         .css-1oe6wy4.e1tzin5v2 {
             justify-content: center;
         }
-        /* Slightly style the button */
-        button[kind="secondary"] {
-            border-radius: 4px;
-            background-color: #0072FF;
-            color: white;
-            font-weight: 500;
-            padding: 0.5rem 1rem;
-        }
         </style>
         """,
         unsafe_allow_html=True
     )
 
-    # Custom "title" area: an icon plus heading
+    # Title area with a clock image
     st.markdown(
         """
         <div style="display:flex; align-items:center; margin-bottom:1rem;">
@@ -484,22 +473,18 @@ def main():
     st.write("_It may take a few seconds to generate the entire dialogue..._")
 
     if st.button("Run"):
-        # create the event loop
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
-
         conversation_steps = loop.run_until_complete(get_contest_messages())
         loop.close()
 
-        # parse the two participants from the God message
+        # Attempt to parse who Arguer1 and Arguer2 are from the God message
         person1 = "Unknown Arguer1"
         person2 = "Unknown Arguer2"
-
         import re
         for msg in conversation_steps:
             if not hasattr(msg, "source") or not hasattr(msg, "content"):
                 continue
-
             if msg.source == "God" and msg.content:
                 match = re.search(r"let (.*?) and (.*?) converse about", msg.content)
                 if match:
@@ -510,11 +495,12 @@ def main():
         st.session_state["person1"] = person1
         st.session_state["person2"] = person2
 
-        # Pastel blue, then subtle pink
+        # Alternating pastel colors
         background_colors = ["#f0f5ff", "#ffe9f0"]
 
         for i, step in enumerate(conversation_steps):
-            if not hasattr(step, "type") or step.type != "TextMessage":
+            # Only text messages with non-empty content
+            if getattr(step, "type", "") != "TextMessage":
                 continue
             content = getattr(step, "content", "")
             if not content.strip():
@@ -524,13 +510,13 @@ def main():
             if not raw_source:
                 continue
 
-            # Map Arguer1 / Arguer2 -> actual person name
+            # If Arguer1 or Arguer2, use the person's avatar
             if raw_source == "Arguer1":
                 avatar_url = get_avatar_url_for_person(st.session_state["person1"])
             elif raw_source == "Arguer2":
                 avatar_url = get_avatar_url_for_person(st.session_state["person2"])
             else:
-                # e.g. God, Host, Judge, user
+                # e.g. God, Host, Judge, user, or unknown
                 avatar_url = AVATAR_URLS.get(raw_source, AVATAR_URLS["fallback"])
 
             bg_color = background_colors[i % 2]
@@ -547,7 +533,8 @@ model_client = OpenAIChatCompletionClient(
     temperature=1.0
 )
 
-# Rebuild same participants as run_famous_people_contest
+# Exactly as in run_famous_people_contest, define participants:
+
 person1, person2 = pick_two_people()
 topic = pick_random_topic()
 style = decide_style()
@@ -568,7 +555,6 @@ god_agent = AssistantAgent(
 
 host_system_message = f"""
 You are the Host.
-Your tasks:
 1) Wait for the God to speak...
 (etc.)
 """
@@ -628,6 +614,7 @@ chat = SelectorGroupChat(
 
 if __name__ == "__main__":
     main()
+
 
 
 
