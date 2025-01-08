@@ -477,15 +477,15 @@ def main():
             st.write(step)  # Print the full raw data for each step
 
             # Debug: Print all raw messages for inspection
-    st.write("### Debug: Raw Messages")
-    for step in conversation_steps:
-        st.write(step)  # Print the full raw data for each step
+        st.write("### Debug: Raw Messages")
+        for step in conversation_steps:
+            st.write(step)  # Print the full raw data for each step
 
-    # Process each step in the conversation
-    for i, step in enumerate(conversation_steps):
-        # Extract content and agent_name
-        content = getattr(step, "content", "")
-        agent_name = getattr(step, "agent_name", "")  # Adjust if step uses 'source' instead of 'agent_name'
+        # Process each step in the conversation
+        for i, step in enumerate(conversation_steps):
+            # Extract content and agent_name
+            content = getattr(step, "content", "")
+            agent_name = getattr(step, "agent_name", "")  # Adjust if step uses 'source' instead of 'agent_name'
 
         # Debug: Print content and agent_name for each step
         st.write(f"DEBUG: Agent: {agent_name}, Content: {content}")
