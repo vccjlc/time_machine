@@ -352,7 +352,7 @@ Then remain absolutely silent.
         termination_condition=termination_condition
     )
 
-    async for msg in chat.run_stream(task="Dear God, please speak!"):
+    async for msg in chat.run_stream(task="Dear God, please speak!):
         yield msg  # yield each conversation step
 
 ###############################################################################
@@ -361,7 +361,7 @@ Then remain absolutely silent.
 # Replace these with your own URLs. If participant not found, fallback used.
 AVATAR_URLS = {
     "God": "https://i.imgur.com/wyw9Hrf.png",
-    "Host": "https://example.com/host.png",
+    "Host": "https://imgur.com/a/rWmmHva",
     "Arguer1": "https://example.com/arg1.png",
     "Arguer2": "https://example.com/arg2.png",
     "Judge": "https://example.com/judge.png",
@@ -404,10 +404,23 @@ def main():
         conversation_steps = loop.run_until_complete(get_contest_messages())
         loop.close()
 
+        source_map = {
+            "God": "God",
+            "Host": "Host",
+            "Arguer1": "Arguer1",
+            "Arguer2": "Arguer2",
+            "Judge": "Judge",
+            "user": "fallback",  # Or create a special "user" avatar
+        }
+
         # conversation_steps = [TaskResult(...), TaskResult(...), ...]
         for step in conversation_steps:
             agent_name = getattr(step, "agent_name", "")
             content = getattr(step, "content", "")
+            if not content.strip():
+            # Skip empty messages
+                continue
+            # otherwise display
             if not agent_name:
                 agent_name = "fallback"
             
