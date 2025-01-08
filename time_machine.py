@@ -410,6 +410,8 @@ def main():
             content = getattr(step, "content", "")
             if not agent_name:
                 agent_name = "fallback"
+            
+            st.write(step)  # Inspect the full structure of `step`
 
             # Find matching avatar
             avatar_url = AVATAR_URLS.get(agent_name, AVATAR_URLS["fallback"])
