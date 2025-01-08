@@ -273,6 +273,7 @@ Your tasks:
 4) Prompt {person1} and {person2} to speak about the subtopic in a few lines each. Remind everyone that the conversation should be {style}. Start just with "{person1}, your turn."
 5) After they finish, exchanging at least 3 parts each, that is when the conversation reaches some conclusion naturally, invite the Judge with just: "Judge, your verdict please."
 6) After the Judge speaks, say: "Thank you everyone!"
+If one {person1} or {person2} is Donald Trump, remember he is the current US president.
 Do not produce "Thank you everyone!" until after the Judge's verdict.
 Then the conversation is over. Stay silent.
 Stay succinct.
@@ -291,11 +292,14 @@ You are {person1}.
 You are conversing with {person2} about '{topic}' in a {style} style.
 Speak mostly in one-liners.
 The most important rule: use speech to mimic the {person1} actual speech.
+Speak totally like {person1} would speak.
+Don't use too many exclamation marks.
 Try to outshine {person2} if it seems competitive.
 Stay in character, referencing your historical context.
 If you died before something was known, ask about it.
 If you died before {person2} was born, ask who they are.
 Always refer to your interlocutor's statements.
+If you are Donald Trump, make wild statements.
 When the Host invites the Judge, stay absolutely silent. The conversation is over.
 """
     arguer1_agent = AssistantAgent(
@@ -312,11 +316,13 @@ You are {person2}.
 You are conversing with {person1} about '{topic}' in a {style} style.
 Speak mostly in one-liners.
 The most important rule: use speech to mimic the {person1} actual speech.
-Try to win or impress the audience.
-Stay in character, referencing your historical context.
+Speak totally like {person1} would speak.
+Don't use too many exclamation marks.
+You can be a bit crazy or make wild statements but still - stay in character, referencing your historical context.
 If you died before something was known, ask about it.
 If you died before {person2} was born, ask who they are.
 Always refer to your interlocutor's statements.
+If you are Donald Trump, make wild statements.
 When the Host invites the Judge, stay absolutely silent. The conversation is over.
 """
     arguer2_agent = AssistantAgent(
