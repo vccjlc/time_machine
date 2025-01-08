@@ -13,7 +13,7 @@ from autogen_agentchat.teams import SelectorGroupChat
 from autogen_agentchat.conditions import TextMentionTermination
 
 ###############################################################################
-# 1) Lists of famous individuals by category (UNCHANGED)
+# 1) Lists of famous individuals by category
 ###############################################################################
 FAMOUS_PHYSICISTS = [
     "Albert Einstein",
@@ -385,7 +385,7 @@ def main():
     st.set_page_config(page_title="Time Machine", layout="centered")
 
     st.title("Time Machine")
-    st.write("Press to see the conversation.")
+    st.write("Press 'Run' to initiate the conversation.")
 
     if st.button("Run"):
         loop = asyncio.new_event_loop()
