@@ -358,6 +358,7 @@ Then remain absolutely silent.
     async for msg in chat.run_stream(task="Dear God, please speak!"):
         yield msg  # yield each conversation step
 
+
 ###############################################################################
 # 5) AVATARS (No names displayed, only pictures)
 ###############################################################################
@@ -373,16 +374,13 @@ AVATAR_URLS = {
     "fallback": "https://i.imgur.com/wyw9Hrf.png",
 }
 
-# If you want to map actual historical figures to custom avatars, too,
-# keep your PERSON_AVATARS dict and so on. Or skip if you only want generic roles.
-
 # Two bubble background colors (pastel blue & pastel pink)
 BUBBLE_COLORS = ["#f0f5ff", "#ffe9f0"]
 
 
 def display_avatar_and_text(avatar_url: str, content: str, index: int):
     """
-    Render a message bubble with an avatar. 
+    Render a message bubble with an avatar.
     The 'index' is used to alternate bubble colors.
     """
     bg_color = BUBBLE_COLORS[index % 2]
@@ -419,7 +417,7 @@ def display_avatar_and_text(avatar_url: str, content: str, index: int):
 async def get_contest_messages():
     """
     Runs the multi-agent conversation from run_famous_people_contest,
-    returning all message steps. 
+    returning all message steps.
     """
     with st.spinner("Agents are talking"):
         msgs = []
@@ -466,63 +464,39 @@ def main():
     st.write("_It may take a few seconds to generate the entire dialogue..._")
 
     if st.button("Run"):
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-    conversation_steps = loop.run_until_complete(get_contest_messages())
-    loop.close()
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        conversation_steps = loop.run_until_complete(get_contest_messages())
+        loop.close()
 
-    # Debug: Print all raw messages for inspection
-    st.write("### Debug: Raw Messages")
-    for step in conversation_steps:
-        st.write(step)  # Print the full raw data for each step
+        # Debug: Print all raw messages for inspection
+        st.write("### Debug: Raw Messages")
+        for step in conversation_steps:
+            st.write(step)  # Print the full raw data for each step
 
-    # Process each step in the conversation
-    for i, step in enumerate(conversation_steps):
-        # Extract content and agent_name
-        content = getattr(step, "content", "")
-        agent_name = getattr(step, "agent_name", "")  # Adjust if step uses 'source' instead of 'agent_name'
-
-        # Debug: Print content and agent_name for each step
-        st.write(f"DEBUG: Agent: {agent_name}, Content: {content}")
-
-        if not content.strip():
-            continue  # Skip empty messages
-
-        # Apply name_map to fix any incorrect agent_name
-        mapped_name = name_map.get(agent_name, agent_name)
-        avatar_url = AVATAR_URLS.get(mapped_name, AVATAR_URLS["fallback"])
-
-        # Display bubble
-        display_avatar_and_text(avatar_url, content, i)
-
-        # Apply name_map to fix any incorrect agent_name
-        mapped_name = name_map.get(agent_name, agent_name)
-        avatar_url = AVATAR_URLS.get(mapped_name, AVATAR_URLS["fallback"])
-
-        # Display bubble
-        display_avatar_and_text(avatar_url, content, i)
-
-        # This dictionary ensures that if the library returns something
-        # like "assistant" or "", we re-map it to the correct role name
-        # that is in AVATAR_URLS.
+        # This dictionary ensures mapping between returned agent names and roles
         name_map = {
-            "assistant": "Host",       # If your library lumps host messages as 'assistant'
-            "assistant_1": "Arguer1",  # Or "assistant-1", etc. if you see that in logs
+            "assistant": "Host",
+            "assistant_1": "Arguer1",
             "assistant_2": "Arguer2",
             "assistant_3": "Judge",
             "system": "God",
             "": "fallback",
-            # ... Add more if you see different agent_name values in your debug logs
         }
 
+        # Process each step in the conversation
         for i, step in enumerate(conversation_steps):
-            # 'step' typically has: step.agent_name, step.content, step.type, etc.
+            # Extract content and agent_name
             content = getattr(step, "content", "")
             agent_name = getattr(step, "agent_name", "")
-            if not content.strip():
-                continue  # skip empty
 
-            # Apply the name_map to fix fallback issues
+            # Debug: Print content and agent_name for each step
+            st.write(f"DEBUG: Agent: {agent_name}, Content: {content}")
+
+            if not content.strip():
+                continue  # Skip empty messages
+
+            # Apply name_map to fix any incorrect agent_name
             mapped_name = name_map.get(agent_name, agent_name)
             avatar_url = AVATAR_URLS.get(mapped_name, AVATAR_URLS["fallback"])
 
@@ -534,9 +508,6 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
-
 
 
 
