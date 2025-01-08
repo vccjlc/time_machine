@@ -379,7 +379,7 @@ PERSON_AVATARS = {
 AVATAR_URLS = {
     "God": "https://i.imgur.com/wyw9Hrf.png",      # example
     "Host": "https://i.imgur.com/Bgy4LxS.png",     # example
-    "Judge": "https://i.imgur.com/LfPuI2Q.png",    # new URL you mentioned
+    "Judge": "https://i.imgur.com/LfPuI2Q.png",    # example
     "fallback": "https://i.imgur.com/wyw9Hrf.png", # example
 }
 
@@ -401,11 +401,11 @@ def display_avatar_and_text(avatar_url: str, content: str, bg_color: str):
             background-color:{bg_color};
             color:#000;
             padding:10px;
-            border-radius:8px;
+            border-radius:6px;
             margin-bottom:10px;
             display:flex;
             align-items:center;
-            box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
         ">
             <img src="{avatar_url}" style="
                 width:40px;
@@ -427,56 +427,26 @@ async def get_contest_messages():
     Runs the multi-agent conversation and returns all messages.
     We also capture person1 and person2 in st.session_state so we can 
     properly map Arguer1 / Arguer2 to the relevant avatar.
-
-    We add a custom HTML spinner to show while the conversation is generated.
     """
-    spinner_html = """
-    <div style="display:flex; align-items:center;">
-        <div class="custom-spinner"></div>
-        <p style="margin-left:8px;">Generating the conversation, please wait...</p>
-    </div>
-    <style>
-    .custom-spinner {
-        width: 12px;
-        height: 12px;
-        border-radius: 6px;
-        background-color: #ff5454;
-        animation: pulse 1s infinite;
-    }
-    @keyframes pulse {
-        0% { transform: scale(0.8); opacity: 0.7; }
-        50% { transform: scale(1.3); opacity: 1; }
-        100% { transform: scale(0.8); opacity: 0.7; }
-    }
-    </style>
-    """
-    # Combine st.spinner with our custom HTML
-    with st.spinner():
-        spinner_placeholder = st.empty()
-        spinner_placeholder.markdown(spinner_html, unsafe_allow_html=True)
-
+    with st.spinner("Agents are talking!"):
         msgs = []
-        # Run the conversation
-        async for m in run_famous_people_contest():
+        # Run the conversation WITHOUT a user task:
+        async for m in chat.run_stream():  # <-- changed from 'task="Dear God..."'
             msgs.append(m)
-
-        # Clear the custom spinner
-        spinner_placeholder.empty()
         return msgs
 
 def main():
     # IMPORTANT: set_page_config must be the first Streamlit command
     st.set_page_config(page_title="Time Machine", layout="centered")
 
-    # Some “cool but simple” CSS: gradient background, subtle overall style
+    # A bit more visible gradient background + some minimal styling
     st.markdown(
         """
         <style>
         body {
-            background: linear-gradient(120deg, #ffffff 0%, #fafafa 100%);
+            background: linear-gradient(120deg, #ffffff 0%, #f7f7f7 100%);
             color: #333;
             font-family: "Helvetica Neue", Arial, sans-serif;
-            /* Remove default margin/padding for a cleaner look */
             margin: 0;
             padding: 0;
         }
@@ -490,74 +460,13 @@ def main():
 
     st.title("Time Machine")
     st.write("Press 'Run' to initiate the conversation.")
-    st.write("_It may take a few seconds to generate the entire dialogue..._")
+    st.write("_It may take a few seconds to generate the entire dialogue_")
 
     if st.button("Run"):
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
-        conversation_steps = loop.run_until_complete(get_contest_messages())
-        loop.close()
+        # 1) Create the conversation object (
 
-        # Try to parse the two participants from the God message
-        person1 = "Unknown Arguer1"
-        person2 = "Unknown Arguer2"
-
-        import re
-        for msg in conversation_steps:
-            # Ensure we can safely reference msg.source / msg.content
-            if not hasattr(msg, "source") or not hasattr(msg, "content"):
-                continue
-
-            if msg.source == "God" and msg.content:
-                match = re.search(r"let (.*?) and (.*?) converse about", msg.content)
-                if match:
-                    person1 = match.group(1).strip()
-                    person2 = match.group(2).strip()
-                break
-
-        # Store them for reference
-        st.session_state["person1"] = person1
-        st.session_state["person2"] = person2
-
-        # Two background colors, the second more contrasting
-        background_colors = ["#f0f5ff", "#ffecee"]
-
-        for i, step in enumerate(conversation_steps):
-            # Verify it's a text message with content
-            if not hasattr(step, "type") or step.type != "TextMessage":
-                continue
-
-            content = getattr(step, "content", "")
-            if not content.strip():
-                continue
-
-            raw_source = getattr(step, "source", None)
-            if not raw_source:
-                # If no source is present, skip
-                continue
-
-            # Decide on the avatar
-            if raw_source == "Arguer1":
-                # Arguer1 => person1
-                person_name = st.session_state["person1"]
-                avatar_url = get_avatar_url_for_person(person_name)
-            elif raw_source == "Arguer2":
-                # Arguer2 => person2
-                person_name = st.session_state["person2"]
-                avatar_url = get_avatar_url_for_person(person_name)
-            else:
-                # e.g. God, Host, Judge, or user
-                avatar_url = AVATAR_URLS.get(raw_source, AVATAR_URLS["fallback"])
-
-            # Alternate background colors
-            bg_color = background_colors[i % 2]
-
-            display_avatar_and_text(avatar_url, content, bg_color)
-
-    st.write("---")
-
-if __name__ == "__main__":
-    main()
 
 
 
