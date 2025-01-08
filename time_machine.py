@@ -466,32 +466,34 @@ def main():
     st.write("_It may take a few seconds to generate the entire dialogue..._")
 
     if st.button("Run"):
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-        conversation_steps = loop.run_until_complete(get_contest_messages())
-        loop.close()
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    conversation_steps = loop.run_until_complete(get_contest_messages())
+    loop.close()
 
-        # Debug: Print all raw messages for inspection
-        st.write("### Debug: Raw Messages")
-        for step in conversation_steps:
-            st.write(step)  # Print the full raw data for each step
+    # Debug: Print all raw messages for inspection
+    st.write("### Debug: Raw Messages")
+    for step in conversation_steps:
+        st.write(step)  # Print the full raw data for each step
 
-            # Debug: Print all raw messages for inspection
-        st.write("### Debug: Raw Messages")
-        for step in conversation_steps:
-            st.write(step)  # Print the full raw data for each step
-
-        # Process each step in the conversation
-        for i, step in enumerate(conversation_steps):
-            # Extract content and agent_name
-            content = getattr(step, "content", "")
-            agent_name = getattr(step, "agent_name", "")  # Adjust if step uses 'source' instead of 'agent_name'
+    # Process each step in the conversation
+    for i, step in enumerate(conversation_steps):
+        # Extract content and agent_name
+        content = getattr(step, "content", "")
+        agent_name = getattr(step, "agent_name", "")  # Adjust if step uses 'source' instead of 'agent_name'
 
         # Debug: Print content and agent_name for each step
         st.write(f"DEBUG: Agent: {agent_name}, Content: {content}")
 
         if not content.strip():
             continue  # Skip empty messages
+
+        # Apply name_map to fix any incorrect agent_name
+        mapped_name = name_map.get(agent_name, agent_name)
+        avatar_url = AVATAR_URLS.get(mapped_name, AVATAR_URLS["fallback"])
+
+        # Display bubble
+        display_avatar_and_text(avatar_url, content, i)
 
         # Apply name_map to fix any incorrect agent_name
         mapped_name = name_map.get(agent_name, agent_name)
