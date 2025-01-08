@@ -367,7 +367,7 @@ Then remain absolutely silent.
 # Replace these with your own URLs. If participant not found, fallback used.
 AVATAR_URLS = {
     "God": "https://i.imgur.com/wyw9Hrf.png",
-    "Host": "https://imgur.com/a/rWmmHva",  # Example placeholder
+    "Host": "https://i.imgur.com/hAz7cDf.png",
     "Arguer1": "https://example.com/arg1.png",
     "Arguer2": "https://example.com/arg2.png",
     "Judge": "https://example.com/judge.png",
