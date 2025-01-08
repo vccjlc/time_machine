@@ -428,7 +428,7 @@ async def get_contest_messages():
     Runs the multi-agent conversation and returns all messages.
     Using 'Dear God, please speak!' as the user prompt to start the conversation.
     """
-    with st.spinner("Generating the conversation... Please wait a moment."):
+    with st.spinner("_Agents are talking_"):
         msgs = []
         # Start conversation with user prompt
         async for m in chat.run_stream(task="Dear God, please speak!"):
@@ -470,7 +470,7 @@ def main():
     )
 
     st.write("Press **Run** to initiate the conversation.")
-    st.write("_It may take a few seconds to generate the entire dialogue..._")
+    st.write("_It may take a few seconds to generate the entire dialogue_")
 
     if st.button("Run"):
         loop = asyncio.new_event_loop()
