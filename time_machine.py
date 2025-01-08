@@ -361,20 +361,41 @@ Then remain absolutely silent.
 ###############################################################################
 # 5) AVATARS (No names displayed, only pictures)
 ###############################################################################
-# Replace these with your own URLs. If participant not found, fallback used.
-AVATAR_URLS = {
-    "God": "https://i.imgur.com/wyw9Hrf.png",
-    "Host": "https://i.imgur.com/Bgy4LxS.png",
-    "Arguer1": "https://example.com/arg1.png",
-    "Arguer2": "https://example.com/arg2.png",
-    "Judge": "https://example.com/judge.png",
-    "fallback": "https://i.imgur.com/wyw9Hrf.png",
+
+# Hardcode a dictionary mapping each figure’s *exact name string*
+# to their avatar URL.
+PERSON_AVATARS = {
+    # Example entries; add as many as you like:
+    "Donald Trump": "https://i.imgur.com/XXXXXXXX.png",
+    "Albert Einstein": "https://i.imgur.com/XXXXXXXX.png",
+    "Marie Curie": "https://i.imgur.com/XXXXXXXX.png",
+    "Stephen Hawking": "https://i.imgur.com/XXXXXXXX.png",
+    "Isaac Newton": "https://i.imgur.com/XXXXXXXX.png",
+    "Thomas Jefferson": "https://i.imgur.com/XXXXXXXX.png",
+    # etc... fill in for each relevant historical figure
 }
 
-def display_avatar_and_text(avatar_url: str, content: str, bg_color: str):
-    # Render a message with an avatar, no name displayed,
-    # using bg_color for the background.
+# For roles like God, Host, Judge, or fallback
+AVATAR_URLS = {
+    "God": "https://i.imgur.com/wyw9Hrf.png",      # example
+    "Host": "https://i.imgur.com/Bgy4LxS.png",     # example
+    "Judge": "https://i.imgur.com/LfPuI2Q.png",   # example
+    "fallback": "https://i.imgur.com/wyw9Hrf.png", # example
+}
 
+def get_avatar_url_for_person(person_name: str) -> str:
+    """
+    Look up the person's avatar in PERSON_AVATARS; if not found,
+    return the fallback.
+    """
+    return PERSON_AVATARS.get(person_name, AVATAR_URLS["fallback"])
+
+
+def display_avatar_and_text(avatar_url: str, content: str, bg_color: str):
+    """
+    Render a message with an avatar, no name displayed,
+    using bg_color for the background.
+    """
     st.markdown(
         f"""<div style="background-color:{bg_color}; color:#000; 
                     padding:10px; border-radius:5px; margin-bottom:10px; 
@@ -382,60 +403,123 @@ def display_avatar_and_text(avatar_url: str, content: str, bg_color: str):
             <img src="{avatar_url}" style="width:40px; height:40px; 
                      border-radius:20px; margin-right:10px;" />
             <div>{content}</div>
-        </div>
-        """,
+        </div>""",
         unsafe_allow_html=True
     )
+
 
 ###############################################################################
 # 6) The Streamlit UI
 ###############################################################################
 async def get_contest_messages():
-    msgs = []
-    async for m in run_famous_people_contest():
-        msgs.append(m)
-    return msgs
+    """
+    Runs the multi-agent conversation and returns all messages.
+    We also capture person1 and person2 in st.session_state so we can 
+    properly map Arguer1 / Arguer2 to the relevant avatar.
+    """
+    # We'll fetch the conversation in an async manner, with a spinner
+    with st.spinner("Generating the conversation... Please wait a moment."):
+        msgs = []
+        # Actually run the conversation
+        async for m in run_famous_people_contest():
+            msgs.append(m)
+        return msgs
 
 def main():
+    # A bit of custom CSS for an elegant look
+    st.markdown(
+        """
+        <style>
+        /* A subtle, classic style theme */
+        body {
+            background-color: #fafafa;
+            color: #333;
+            font-family: "Helvetica Neue", Arial, sans-serif;
+        }
+        .css-1oe6wy4.e1tzin5v2 {  /* center alignment fix in some Streamlit versions */
+            justify-content: center;
+        }
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
+
     st.set_page_config(page_title="Time Machine", layout="centered")
 
     st.title("Time Machine")
     st.write("Press 'Run' to initiate the conversation.")
-    st.write("_Allow a few seconds for generation. The full conversation will appear shortly after you press the button._")
+    st.write("_It may take a few seconds to generate the entire dialogue..._")
 
     if st.button("Run"):
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
+        # Actually gather the conversation steps
         conversation_steps = loop.run_until_complete(get_contest_messages())
         loop.close()
 
-        # Map .source to keys in AVATAR_URLS
-        source_map = {
-            "God": "God",
-            "Host": "Host",
-            "Arguer1": "Arguer1",
-            "Arguer2": "Arguer2",
-            "Judge": "Judge",
-            "user": "fallback",  # We'll fallback for user
-        }
+        #######################################################################
+        # We read from the first message(s) in the conversation to see
+        # who the system chose as Arguer1 (person1) and Arguer2 (person2).
+        # The code in run_famous_people_contest() picks them, but we need
+        # to store them ourselves if we want a dynamic approach.
+        #
+        # Note: If we want to store them in st.session_state *during*
+        # run_famous_people_contest, you'd have to do that in the code
+        # above. Another approach is to parse from the "God" or "Host"
+        # output. For simplicity, let's do a quick parse from "God" step.
+        #######################################################################
+        # If you'd rather directly store in run_famous_people_contest, you can,
+        # but here's a quick approach:
+        person1 = "Unknown Arguer1"
+        person2 = "Unknown Arguer2"
 
-        # Two background colors to alternate
-        background_colors = ["#f0f5ff", "#e8f0ff"]  # Light modern blues
+        for msg in conversation_steps:
+            if msg.source == "God" and msg.content:
+                # Example line: "My children, let X and Y converse about..."
+                # We'll try to parse that
+                import re
+                match = re.search(r"let (.*?) and (.*?) converse about", msg.content)
+                if match:
+                    person1 = match.group(1).strip()
+                    person2 = match.group(2).strip()
+                break
 
+        # Now store them so we can reference in the loop below
+        st.session_state["person1"] = person1
+        st.session_state["person2"] = person2
+
+        # Distinguish Arguer1 from Arguer2 by these names
+        # (in conversation, "Arguer1" means 'person1', etc.)
+
+        # We'll choose two background colors, with the second more contrasting
+        background_colors = ["#f0f5ff", "#ffecee"]  # light pastel blue, pinkish
+
+        # Now display each message
         for i, step in enumerate(conversation_steps):
-            # Only display if it's a TextMessage with non-empty content
+            # Only show if it's a text message with non-empty content
             if getattr(step, "type", "") != "TextMessage":
                 continue
-
             content = getattr(step, "content", "")
             if not content.strip():
                 continue
 
+            # Determine whose avatar to show
             raw_source = getattr(step, "source", "")
-            mapped_source = source_map.get(raw_source, "fallback")
 
-            avatar_url = AVATAR_URLS.get(mapped_source, AVATAR_URLS["fallback"])
-            bg_color = background_colors[i % 2]  # Alternate backgrounds
+            if raw_source == "Arguer1":
+                # Use the stored person1 name
+                person_name = st.session_state.get("person1", "")
+                avatar_url = get_avatar_url_for_person(person_name)
+            elif raw_source == "Arguer2":
+                # Use the stored person2 name
+                person_name = st.session_state.get("person2", "")
+                avatar_url = get_avatar_url_for_person(person_name)
+            else:
+                # For "God", "Host", "Judge", or "user"
+                avatar_url = AVATAR_URLS.get(raw_source, AVATAR_URLS["fallback"])
+
+            # Alternate background color
+            bg_color = background_colors[i % 2]
 
             display_avatar_and_text(avatar_url, content, bg_color)
 
@@ -443,3 +527,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
