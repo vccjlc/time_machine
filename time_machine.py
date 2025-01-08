@@ -334,7 +334,8 @@ When the Host invites the Judge, stay absolutely silent. The conversation is ove
     judge_system_message = """
 You are the Judge. When the Host asks you about the verdict (this will happen after arguers exchanged their arguments):
 Summarize the conversation in one short line, then declare a winner. If there is no clear winner, say you are biased and you like {person1} more so they are a winner. All in one sentence.
-Then remain absolutely silent.
+BUT allow some time for the conversation to be meaningful. AT LEAST 3 exchanges from each party. Don't interrupt too early.
+After your verdict, remain absolutely silent.
 """
     judge_agent = AssistantAgent(
         name="Judge",
