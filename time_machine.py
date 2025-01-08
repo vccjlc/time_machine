@@ -375,12 +375,13 @@ PERSON_AVATARS = {
     # ... Add as many as you like
 }
 
-# For roles like God, Host, Judge, or fallback
+# For roles like God, Host, Judge, user, or fallback
 AVATAR_URLS = {
-    "God": "https://i.imgur.com/wyw9Hrf.png",      # example
-    "Host": "https://i.imgur.com/Bgy4LxS.png",     # example
-    "Judge": "https://i.imgur.com/LfPuI2Q.png",    # example
-    "fallback": "https://i.imgur.com/wyw9Hrf.png", # example
+    "God": "https://i.imgur.com/wyw9Hrf.png",       # example
+    "Host": "https://i.imgur.com/Bgy4LxS.png",      # example
+    "Judge": "https://i.imgur.com/3YLTpUE.png",     # example
+    "user": "https://i.imgur.com/abLj6k4.png",      # your user avatar
+    "fallback": "https://i.imgur.com/wyw9Hrf.png",  # example
 }
 
 def get_avatar_url_for_person(person_name: str) -> str:
@@ -427,11 +428,13 @@ async def get_contest_messages():
     Runs the multi-agent conversation and returns all messages.
     We also capture person1 and person2 in st.session_state so we can 
     properly map Arguer1 / Arguer2 to the relevant avatar.
+
+    The conversation starts with task="Dear God, please speak!" so that
+    the user effectively triggers God to speak first.
     """
     with st.spinner("Generating the conversation... Please wait a moment."):
         msgs = []
-        # Run the conversation WITHOUT a user task:
-        async for m in chat.run_stream():  # <-- changed from 'task="Dear God..."'
+        async for m in chat.run_stream(task="Dear God, please speak!"):
             msgs.append(m)
         return msgs
 
@@ -453,34 +456,47 @@ def main():
         .css-1oe6wy4.e1tzin5v2 {
             justify-content: center;
         }
+        /* Slightly style the button */
+        button[kind="secondary"] {
+            border-radius: 4px;
+            background-color: #0072FF;
+            color: white;
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+        }
         </style>
         """,
         unsafe_allow_html=True
     )
 
-    st.title("Time Machine")
-    st.write("Press 'Run' to initiate the conversation.")
+    # Custom "title" area: an icon plus heading
+    st.markdown(
+        """
+        <div style="display:flex; align-items:center; margin-bottom:1rem;">
+            <img src="https://i.imgur.com/b3vBliL.png" style="width:50px; margin-right:15px;" />
+            <h1 style="margin:0; font-size:2.2rem;">Time Machine</h1>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+    st.write("Press **Run** to initiate the conversation.")
     st.write("_It may take a few seconds to generate the entire dialogue..._")
 
     if st.button("Run"):
+        # create the event loop
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
-        # 1) Create the conversation object (i.e. chat = SelectorGroupChat(...))
-        #    which was built in run_famous_people_contest but not stored.
-        #    So we must re-import or re-initialize the same variables from there.
-        # 
-        #    Or, simpler: We'll call run_famous_people_contest() to yield us `msg`,
-        #    but we need to store that chat object outside. Let's do:
+
         conversation_steps = loop.run_until_complete(get_contest_messages())
         loop.close()
 
-        # 2) Try to parse the two participants from the God message
+        # parse the two participants from the God message
         person1 = "Unknown Arguer1"
         person2 = "Unknown Arguer2"
-        import re
 
+        import re
         for msg in conversation_steps:
-            # Make sure .source and .content exist
             if not hasattr(msg, "source") or not hasattr(msg, "content"):
                 continue
 
@@ -494,7 +510,7 @@ def main():
         st.session_state["person1"] = person1
         st.session_state["person2"] = person2
 
-        # Two background colors: first a pastel blue, second a subtle pink
+        # Pastel blue, then subtle pink
         background_colors = ["#f0f5ff", "#ffe9f0"]
 
         for i, step in enumerate(conversation_steps):
@@ -506,7 +522,7 @@ def main():
 
             raw_source = getattr(step, "source", None)
             if not raw_source:
-                continue  # skip if no source
+                continue
 
             # Map Arguer1 / Arguer2 -> actual person name
             if raw_source == "Arguer1":
@@ -522,26 +538,20 @@ def main():
 
     st.write("---")
 
-# Now we must define the chat object globally or re-import it:
-# We'll just replicate the partial creation from run_famous_people_contest
-# so that `chat` is accessible in get_contest_messages. 
-# (Alternatively, you could rewrite run_famous_people_contest() so it doesn't
-# create/return chat ephemeral, but we'll do a minimal fix here.)
-
+# Make the chat object globally so get_contest_messages() can use it
 from autogen_agentchat.teams import SelectorGroupChat
 
-# Rebuild the same participants and chat object from above so run_stream() is accessible:
 model_client = OpenAIChatCompletionClient(
     api_key=st.secrets["openai"]["OPENAI_API_KEY"],
     model="gpt-4o-mini",
     temperature=1.0
 )
 
+# Rebuild same participants as run_famous_people_contest
 person1, person2 = pick_two_people()
 topic = pick_random_topic()
 style = decide_style()
 
-# 1) God
 god_system_message = f"""
 You are God.
 Output exactly one short line, then remain silent:
@@ -556,10 +566,11 @@ god_agent = AssistantAgent(
     tools=[]
 )
 
-# 2) Host
 host_system_message = f"""
 You are the Host.
-(etc. same as above) 
+Your tasks:
+1) Wait for the God to speak...
+(etc.)
 """
 host_agent = AssistantAgent(
     name="Host",
@@ -569,8 +580,8 @@ host_agent = AssistantAgent(
     tools=[]
 )
 
-# 3) Arguer1
 arguer1_system_message = f"""
+You are {person1}.
 (etc.)
 """
 arguer1_agent = AssistantAgent(
@@ -581,8 +592,8 @@ arguer1_agent = AssistantAgent(
     tools=[]
 )
 
-# 4) Arguer2
 arguer2_system_message = f"""
+You are {person2}.
 (etc.)
 """
 arguer2_agent = AssistantAgent(
@@ -593,8 +604,8 @@ arguer2_agent = AssistantAgent(
     tools=[]
 )
 
-# 5) Judge
 judge_system_message = """
+You are the Judge.
 (etc.)
 """
 judge_agent = AssistantAgent(
@@ -617,6 +628,7 @@ chat = SelectorGroupChat(
 
 if __name__ == "__main__":
     main()
+
 
 
 
