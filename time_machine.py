@@ -362,14 +362,29 @@ Then remain absolutely silent.
 # 5) AVATARS (No names displayed, only pictures)
 ###############################################################################
 
-# For each participant or fallback
+# 1) A dictionary for each possible real person. 
+#    The keys must match EXACT strings used in your random lists.
+PERSON_AVATARS = {
+    "Donald Trump": "https://i.imgur.com/XXXXXXXX.png",
+    "Albert Einstein": "https://i.imgur.com/XXXXXXXX.png",
+    "Marie Curie": "https://i.imgur.com/XXXXXXXX.png",
+    "Stephen Hawking": "https://i.imgur.com/XXXXXXXX.png",
+    "Isaac Newton": "https://i.imgur.com/XXXXXXXX.png",
+    "Thomas Jefferson": "https://i.imgur.com/XXXXXXXX.png",
+    "Leonardo da Vinci": "https://i.imgur.com/XXXXXXXX.png",
+    "Cleopatra": "https://i.imgur.com/XXXXXXXX.png",
+    "Napoleon Bonaparte": "https://i.imgur.com/XXXXXXXX.png",
+    # ... etc. Fill in for each name in your random lists.
+}
+
+# 2) Generic role-based avatars
 AVATAR_URLS = {
     "God": "https://i.imgur.com/wyw9Hrf.png",
     "Host": "https://i.imgur.com/Bgy4LxS.png",
-    "Arguer1": "https://i.imgur.com/WxgZfQC.png",  # Example placeholders
-    "Arguer2": "https://i.imgur.com/sqPjzaI.png",  # Example placeholders
+    "Arguer1": "https://i.imgur.com/WxgZfQC.png",
+    "Arguer2": "https://i.imgur.com/sqPjzaI.png",
     "Judge": "https://i.imgur.com/LfPuI2Q.png",
-    "user": "https://i.imgur.com/abLj6k4.png",     # If you want a user avatar
+    "user": "https://i.imgur.com/abLj6k4.png",
     "fallback": "https://i.imgur.com/wyw9Hrf.png",
 }
 
@@ -408,18 +423,15 @@ def display_avatar_and_text(avatar_url: str, content: str, index: int):
         unsafe_allow_html=True
     )
 
-
 ###############################################################################
 # 6) The Streamlit UI
 ###############################################################################
 
 async def get_contest_messages():
     """
-    This function just runs the multi-agent conversation and collects
-    all messages. We keep the same logic from your old 'run_famous_people_contest'
-    function, which yields a stream of message steps. 
+    Just runs the multi-agent conversation (run_famous_people_contest)
+    and collects all messages. We don't change anything here.
     """
-    # Show a spinner while the agents talk
     with st.spinner("Agents are talking"):
         msgs = []
         async for m in run_famous_people_contest():
@@ -428,7 +440,7 @@ async def get_contest_messages():
 
 
 def main():
-    # Must be first
+    # Keep your new UI as is:
     st.set_page_config(page_title="Time Machine", layout="centered")
 
     # Subtle gradient background + minimal styling
@@ -450,7 +462,7 @@ def main():
         unsafe_allow_html=True
     )
 
-    # Title area with your clock image
+    # Title area with clock image
     st.markdown(
         """
         <div style="display:flex; align-items:center; margin-bottom:1rem;">
@@ -466,30 +478,43 @@ def main():
     st.write("_It may take a few seconds to generate the entire dialogue_")
 
     if st.button("Run"):
-        # We create a new event loop, run the conversation, then close it
+        # 1) run the conversation
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
         conversation_steps = loop.run_until_complete(get_contest_messages())
         loop.close()
 
-        # Now we display each message in the conversation
+        # 2) parse 'God' message to identify the real names for Arguer1/Arguer2
+        import re
+        real_person1 = "Unknown Person1"
+        real_person2 = "Unknown Person2"
+        for msg in conversation_steps:
+            if getattr(msg, "agent_name", "") == "God":
+                # e.g. "My children, let Albert Einstein and Cleopatra ... "
+                line = getattr(msg, "content", "")
+                match = re.search(r"let (.*?) and (.*?) converse about", line)
+                if match:
+                    real_person1 = match.group(1).strip()
+                    real_person2 = match.group(2).strip()
+                break
+
+        # 3) now display each message in pastel bubbles
         for i, step in enumerate(conversation_steps):
-            # from your old code: step has agent_name, content, etc.
             agent_name = getattr(step, "agent_name", "")
             content = getattr(step, "content", "")
             if not content.strip():
-                # skip empty lines
-                continue
-            if not agent_name:
-                agent_name = "fallback"
+                continue  # skip empty
 
-            # Debug line (optional)
-            # st.write("DEBUG =>", agent_name, content)
+            # if Arguer1 => use real_person1's avatar from PERSON_AVATARS
+            if agent_name == "Arguer1":
+                # try to get from PERSON_AVATARS, else fallback
+                avatar_url = PERSON_AVATARS.get(real_person1, AVATAR_URLS["Arguer1"])
+            elif agent_name == "Arguer2":
+                avatar_url = PERSON_AVATARS.get(real_person2, AVATAR_URLS["Arguer2"])
+            else:
+                # e.g. God, Host, Judge, user, fallback
+                avatar_url = AVATAR_URLS.get(agent_name, AVATAR_URLS["fallback"])
 
-            # find matching avatar
-            avatar_url = AVATAR_URLS.get(agent_name, AVATAR_URLS["fallback"])
-
-            # display bubble
             display_avatar_and_text(avatar_url, content, i)
 
     st.write("---")
@@ -497,7 +522,6 @@ def main():
 
 if __name__ == "__main__":
     main()
-
 
 
 
