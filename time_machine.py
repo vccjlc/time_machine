@@ -362,30 +362,28 @@ Then remain absolutely silent.
 # 5) AVATARS (No names displayed, only pictures)
 ###############################################################################
 
-PERSON_AVATARS = {
-    # Examples:
-    "Donald Trump": "https://i.imgur.com/XXXXXXXX.png",
-    "Albert Einstein": "https://i.imgur.com/XXXXXXXX.png",
-    "Marie Curie": "https://i.imgur.com/XXXXXXXX.png",
-    "Stephen Hawking": "https://i.imgur.com/XXXXXXXX.png",
-    "Isaac Newton": "https://i.imgur.com/XXXXXXXX.png",
-    # ... etc.
-}
-
+# For each participant or fallback
 AVATAR_URLS = {
     "God": "https://i.imgur.com/wyw9Hrf.png",
     "Host": "https://i.imgur.com/Bgy4LxS.png",
+    "Arguer1": "https://i.imgur.com/WxgZfQC.png",  # Example placeholders
+    "Arguer2": "https://i.imgur.com/sqPjzaI.png",  # Example placeholders
     "Judge": "https://i.imgur.com/LfPuI2Q.png",
-    "user": "https://i.imgur.com/abLj6k4.png",
+    "user": "https://i.imgur.com/abLj6k4.png",     # If you want a user avatar
     "fallback": "https://i.imgur.com/wyw9Hrf.png",
 }
 
-def get_avatar_url_for_person(person_name: str) -> str:
-    """Look up a person's avatar; fallback if unknown."""
-    return PERSON_AVATARS.get(person_name, AVATAR_URLS["fallback"])
+# Two bubble background colors (pastel blue & pastel pink)
+BUBBLE_COLORS = ["#f0f5ff", "#ffe9f0"]
 
-def display_avatar_and_text(avatar_url: str, content: str, bg_color: str):
-    """Render a message bubble with an avatar (no name displayed)."""
+
+def display_avatar_and_text(avatar_url: str, content: str, index: int):
+    """
+    Render a message with an avatar, no name displayed.
+    We alternate bubble colors based on 'index'.
+    """
+    bg_color = BUBBLE_COLORS[index % 2]
+
     st.markdown(
         f"""
         <div style="
@@ -396,7 +394,7 @@ def display_avatar_and_text(avatar_url: str, content: str, bg_color: str):
             margin-bottom:10px;
             display:flex;
             align-items:center;
-            box-shadow:0 1px 3px rgba(0,0,0,0.2);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
         ">
             <img src="{avatar_url}" style="
                 width:40px;
@@ -410,28 +408,30 @@ def display_avatar_and_text(avatar_url: str, content: str, bg_color: str):
         unsafe_allow_html=True
     )
 
+
 ###############################################################################
 # 6) The Streamlit UI
 ###############################################################################
+
 async def get_contest_messages():
     """
-    Streams messages from the chat object using the user prompt:
-    'Dear God, please speak!'
-    Includes debug prints so we can see each message as it arrives.
+    This function just runs the multi-agent conversation and collects
+    all messages. We keep the same logic from your old 'run_famous_people_contest'
+    function, which yields a stream of message steps. 
     """
+    # Show a spinner while the agents talk
     with st.spinner("Agents are talking"):
         msgs = []
-        # Because we've defined `chat` globally, we can reference it here:
-        async for m in chat.run_stream(task="Dear God, please speak!"):
-            # Debug info so we know what's happening
-            st.write(f"DEBUG: Received message from {getattr(m, 'source', '???')}: {getattr(m, 'content', '')}")
+        async for m in run_famous_people_contest():
             msgs.append(m)
         return msgs
 
+
 def main():
+    # Must be first
     st.set_page_config(page_title="Time Machine", layout="centered")
 
-    # Minimal styling (gradient background), no custom button styling
+    # Subtle gradient background + minimal styling
     st.markdown(
         """
         <style>
@@ -450,11 +450,12 @@ def main():
         unsafe_allow_html=True
     )
 
-    # Title area with a clock icon
+    # Title area with your clock image
     st.markdown(
         """
         <div style="display:flex; align-items:center; margin-bottom:1rem;">
-            <img src="https://i.imgur.com/gqyfdYm.png" style="width:50px; margin-right:15px;" />
+            <img src="https://i.imgur.com/gqyfdYm.png" 
+                 style="width:50px; margin-right:15px;" />
             <h1 style="margin:0; font-size:2.2rem;">Time Machine</h1>
         </div>
         """,
@@ -465,149 +466,34 @@ def main():
     st.write("_It may take a few seconds to generate the entire dialogue..._")
 
     if st.button("Run"):
+        # We create a new event loop, run the conversation, then close it
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
-
         conversation_steps = loop.run_until_complete(get_contest_messages())
         loop.close()
 
-        # Attempt to find Arguer1 and Arguer2 in the God message
-        person1 = "Unknown Arguer1"
-        person2 = "Unknown Arguer2"
-        import re
-        for msg in conversation_steps:
-            if getattr(msg, "source", "") == "God":
-                content = getattr(msg, "content", "")
-                match = re.search(r"let (.*?) and (.*?) converse about", content)
-                if match:
-                    person1 = match.group(1).strip()
-                    person2 = match.group(2).strip()
-                break
-
-        st.session_state["person1"] = person1
-        st.session_state["person2"] = person2
-
-        # Two background colors
-        background_colors = ["#f0f5ff", "#ffe9f0"]
-
+        # Now we display each message in the conversation
         for i, step in enumerate(conversation_steps):
-            # Only text messages with content
-            if getattr(step, "type", "") != "TextMessage":
-                continue
+            # from your old code: step has agent_name, content, etc.
+            agent_name = getattr(step, "agent_name", "")
             content = getattr(step, "content", "")
             if not content.strip():
+                # skip empty lines
                 continue
+            if not agent_name:
+                agent_name = "fallback"
 
-            raw_source = getattr(step, "source", None)
-            if not raw_source:
-                continue
+            # Debug line (optional)
+            # st.write("DEBUG =>", agent_name, content)
 
-            # Distinguish Arguer1 / Arguer2 from the actual historical figure
-            if raw_source == "Arguer1":
-                avatar_url = get_avatar_url_for_person(person1)
-            elif raw_source == "Arguer2":
-                avatar_url = get_avatar_url_for_person(person2)
-            else:
-                # e.g. God, Host, Judge, user, fallback
-                avatar_url = AVATAR_URLS.get(raw_source, AVATAR_URLS["fallback"])
+            # find matching avatar
+            avatar_url = AVATAR_URLS.get(agent_name, AVATAR_URLS["fallback"])
 
-            bg_color = background_colors[i % 2]
-            display_avatar_and_text(avatar_url, content, bg_color)
+            # display bubble
+            display_avatar_and_text(avatar_url, content, i)
 
     st.write("---")
 
-##########################################################
-# 7) Define participants + chat globally
-##########################################################
-from autogen_agentchat.teams import SelectorGroupChat
-model_client = OpenAIChatCompletionClient(
-    api_key=st.secrets["openai"]["OPENAI_API_KEY"],
-    model="gpt-4o-mini",
-    temperature=1.0
-)
-
-# We'll create the participants exactly like your run_famous_people_contest did:
-# (We can remove run_famous_people_contest entirely, or just not call it.)
-
-# Helper functions (already defined above in the file) so we reuse them:
-# pick_two_people(), pick_random_topic(), decide_style()
-
-p1, p2 = pick_two_people()
-tp = pick_random_topic()
-stl = decide_style()
-
-god_system_message = f"""
-You are God.
-Output exactly one short line, then remain silent:
-"My children, let {p1} and {p2} converse about '{tp}' with a {stl} flavor. Host, your turn!"
-Then remain absolutely silent afterward.
-"""
-god_agent = AssistantAgent(
-    name="God",
-    description="A deity that briefly introduces the conversation, then is silent.",
-    system_message=god_system_message,
-    model_client=model_client,
-    tools=[]
-)
-
-host_system_message = f"""
-You are the Host.
-Your tasks:
-(etc) ...
-"""
-host_agent = AssistantAgent(
-    name="Host",
-    description="Introduces conversation, calls Judge, ends show with THE_END.",
-    system_message=host_system_message,
-    model_client=model_client,
-    tools=[]
-)
-
-arguer1_system_message = f"""
-You are {p1}.
-(etc) ...
-"""
-arguer1_agent = AssistantAgent(
-    name="Arguer1",
-    description=f"Represents {p1}",
-    system_message=arguer1_system_message,
-    model_client=model_client,
-    tools=[]
-)
-
-arguer2_system_message = f"""
-You are {p2}.
-(etc) ...
-"""
-arguer2_agent = AssistantAgent(
-    name="Arguer2",
-    description=f"Represents {p2}",
-    system_message=arguer2_system_message,
-    model_client=model_client,
-    tools=[]
-)
-
-judge_system_message = """
-You are the Judge.
-(etc) ...
-"""
-judge_agent = AssistantAgent(
-    name="Judge",
-    description="Gives a short verdict, then silent.",
-    system_message=judge_system_message,
-    model_client=model_client,
-    tools=[]
-)
-
-termination_condition = TextMentionTermination("Thank you everyone!")
-participants = [god_agent, host_agent, arguer1_agent, arguer2_agent, judge_agent]
-
-chat = SelectorGroupChat(
-    participants=participants,
-    model_client=model_client,
-    allow_repeated_speaker=True,
-    termination_condition=termination_condition
-)
 
 if __name__ == "__main__":
     main()
