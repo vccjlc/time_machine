@@ -379,7 +379,7 @@ PERSON_AVATARS = {
 AVATAR_URLS = {
     "God": "https://i.imgur.com/wyw9Hrf.png",      # example
     "Host": "https://i.imgur.com/Bgy4LxS.png",     # example
-    "Judge": "https://i.imgur.com/LfPuI2Q.png",        # per your request
+    "Judge": "https://i.imgur.com/LfPuI2Q.png",    # new URL you mentioned
     "fallback": "https://i.imgur.com/wyw9Hrf.png", # example
 }
 
@@ -396,13 +396,26 @@ def display_avatar_and_text(avatar_url: str, content: str, bg_color: str):
     using bg_color for the background.
     """
     st.markdown(
-        f"""<div style="background-color:{bg_color}; color:#000; 
-                    padding:10px; border-radius:5px; margin-bottom:10px; 
-                    display:flex; align-items:center;">
-            <img src="{avatar_url}" style="width:40px; height:40px; 
-                     border-radius:20px; margin-right:10px;" />
+        f"""
+        <div style="
+            background-color:{bg_color};
+            color:#000;
+            padding:10px;
+            border-radius:8px;
+            margin-bottom:10px;
+            display:flex;
+            align-items:center;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+        ">
+            <img src="{avatar_url}" style="
+                width:40px;
+                height:40px;
+                border-radius:20px;
+                margin-right:10px;
+            " />
             <div>{content}</div>
-        </div>""",
+        </div>
+        """,
         unsafe_allow_html=True
     )
 
@@ -414,29 +427,59 @@ async def get_contest_messages():
     Runs the multi-agent conversation and returns all messages.
     We also capture person1 and person2 in st.session_state so we can 
     properly map Arguer1 / Arguer2 to the relevant avatar.
+
+    We add a custom HTML spinner to show while the conversation is generated.
     """
-    with st.spinner("Generating the conversation..."):
+    spinner_html = """
+    <div style="display:flex; align-items:center;">
+        <div class="custom-spinner"></div>
+        <p style="margin-left:8px;">Generating the conversation, please wait...</p>
+    </div>
+    <style>
+    .custom-spinner {
+        width: 12px;
+        height: 12px;
+        border-radius: 6px;
+        background-color: #ff5454;
+        animation: pulse 1s infinite;
+    }
+    @keyframes pulse {
+        0% { transform: scale(0.8); opacity: 0.7; }
+        50% { transform: scale(1.3); opacity: 1; }
+        100% { transform: scale(0.8); opacity: 0.7; }
+    }
+    </style>
+    """
+    # Combine st.spinner with our custom HTML
+    with st.spinner():
+        spinner_placeholder = st.empty()
+        spinner_placeholder.markdown(spinner_html, unsafe_allow_html=True)
+
         msgs = []
-        # Actually run the conversation
+        # Run the conversation
         async for m in run_famous_people_contest():
             msgs.append(m)
+
+        # Clear the custom spinner
+        spinner_placeholder.empty()
         return msgs
 
 def main():
     # IMPORTANT: set_page_config must be the first Streamlit command
     st.set_page_config(page_title="Time Machine", layout="centered")
 
-    # A bit of custom CSS for a simple, elegant look
+    # Some “cool but simple” CSS: gradient background, subtle overall style
     st.markdown(
         """
         <style>
-        /* Subtle classic style */
         body {
-            background-color: #fafafa;
+            background: linear-gradient(120deg, #ffffff 0%, #fafafa 100%);
             color: #333;
             font-family: "Helvetica Neue", Arial, sans-serif;
+            /* Remove default margin/padding for a cleaner look */
+            margin: 0;
+            padding: 0;
         }
-        /* This centers certain elements in some Streamlit versions */
         .css-1oe6wy4.e1tzin5v2 {
             justify-content: center;
         }
@@ -447,7 +490,7 @@ def main():
 
     st.title("Time Machine")
     st.write("Press 'Run' to initiate the conversation.")
-    st.write("_It may take a few seconds to generate the entire dialogue_")
+    st.write("_It may take a few seconds to generate the entire dialogue..._")
 
     if st.button("Run"):
         loop = asyncio.new_event_loop()
@@ -459,31 +502,41 @@ def main():
         person1 = "Unknown Arguer1"
         person2 = "Unknown Arguer2"
 
+        import re
         for msg in conversation_steps:
+            # Ensure we can safely reference msg.source / msg.content
+            if not hasattr(msg, "source") or not hasattr(msg, "content"):
+                continue
+
             if msg.source == "God" and msg.content:
-                import re
                 match = re.search(r"let (.*?) and (.*?) converse about", msg.content)
                 if match:
                     person1 = match.group(1).strip()
                     person2 = match.group(2).strip()
                 break
 
+        # Store them for reference
         st.session_state["person1"] = person1
         st.session_state["person2"] = person2
 
-        # Two background colors, the second more contrasting:
-        background_colors = ["#f0f5ff", "#ffecee"]  # pastel blue, pastel pink
+        # Two background colors, the second more contrasting
+        background_colors = ["#f0f5ff", "#ffecee"]
 
         for i, step in enumerate(conversation_steps):
-            # Only show if it's a TextMessage with non-empty content
-            if getattr(step, "type", "") != "TextMessage":
+            # Verify it's a text message with content
+            if not hasattr(step, "type") or step.type != "TextMessage":
                 continue
+
             content = getattr(step, "content", "")
             if not content.strip():
                 continue
 
-            raw_source = getattr(step, "source", "")
+            raw_source = getattr(step, "source", None)
+            if not raw_source:
+                # If no source is present, skip
+                continue
 
+            # Decide on the avatar
             if raw_source == "Arguer1":
                 # Arguer1 => person1
                 person_name = st.session_state["person1"]
@@ -496,12 +549,15 @@ def main():
                 # e.g. God, Host, Judge, or user
                 avatar_url = AVATAR_URLS.get(raw_source, AVATAR_URLS["fallback"])
 
+            # Alternate background colors
             bg_color = background_colors[i % 2]
+
             display_avatar_and_text(avatar_url, content, bg_color)
 
     st.write("---")
 
 if __name__ == "__main__":
     main()
+
 
 
