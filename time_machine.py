@@ -474,7 +474,7 @@ def main():
         for step in conversation_steps:
             st.write(step)  # Print the full raw data for each step
 
-        # This dictionary ensures mapping between returned agent names and roles
+        # This dictionary ensures mapping between returned .source and roles
         name_map = {
             "assistant": "Host",
             "assistant_1": "Arguer1",
@@ -486,18 +486,18 @@ def main():
 
         # Process each step in the conversation
         for i, step in enumerate(conversation_steps):
-            # Extract content and agent_name
+            # We'll read .source to get the speaker
             content = getattr(step, "content", "")
-            agent_name = getattr(step, "agent_name", "")
+            agent_source = getattr(step, "source", "")
 
-            # Debug: Print content and agent_name for each step
-            st.write(f"DEBUG: Agent: {agent_name}, Content: {content}")
+            # Debug: Print the source and content
+            st.write(f"DEBUG: Agent: {agent_source}, Content: {content}")
 
             if not content.strip():
                 continue  # Skip empty messages
 
-            # Apply name_map to fix any incorrect agent_name
-            mapped_name = name_map.get(agent_name, agent_name)
+            # Map .source to a known role if necessary
+            mapped_name = name_map.get(agent_source, agent_source)
             avatar_url = AVATAR_URLS.get(mapped_name, AVATAR_URLS["fallback"])
 
             # Display bubble
@@ -508,6 +508,5 @@ def main():
 
 if __name__ == "__main__":
     main()
-
 
 
