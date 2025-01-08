@@ -415,7 +415,7 @@ async def get_contest_messages():
     We also capture person1 and person2 in st.session_state so we can 
     properly map Arguer1 / Arguer2 to the relevant avatar.
     """
-    with st.spinner("Generating the conversation... Please wait a moment."):
+    with st.spinner("Generating the conversation..."):
         msgs = []
         # Actually run the conversation
         async for m in run_famous_people_contest():
@@ -447,7 +447,7 @@ def main():
 
     st.title("Time Machine")
     st.write("Press 'Run' to initiate the conversation.")
-    st.write("_It may take a few seconds to generate the entire dialogue..._")
+    st.write("_It may take a few seconds to generate the entire dialogue_")
 
     if st.button("Run"):
         loop = asyncio.new_event_loop()
