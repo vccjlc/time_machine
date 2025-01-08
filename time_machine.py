@@ -28,7 +28,6 @@ FAMOUS_PHYSICISTS = [
 ]
 
 FAMOUS_POLITICIANS = [
-    "Donald Trump", "Donald Trump",  # Weighted
     "Barack Obama",
     "Winston Churchill",
     "Abraham Lincoln",
@@ -40,7 +39,6 @@ FAMOUS_POLITICIANS = [
 ]
 
 FAMOUS_MATHEMATICIANS = [
-    "Donald Trump", "Donald Trump",  # Weighted
     "Alan Turing",
     "Ada Lovelace",
     "Leonhard Euler",
@@ -60,7 +58,6 @@ FAMOUS_PHILOSOPHERS = [
 ]
 
 FAMOUS_SPORTS_PEOPLE = [
-    "Donald Trump", "Donald Trump",  # Weighted
     "Michael Jordan",
     "Muhammad Ali",
     "Serena Williams",
@@ -88,7 +85,7 @@ FAMOUS_US_PRESIDENTS = [
     "Joe Biden",
 ]
 
-OTHER_GREAT_PEOPLE = [
+OTHER = [
     "Donald Trump", "Donald Trump",  # Weighted
     "William Shakespeare",
     "Leonardo da Vinci",
@@ -99,7 +96,6 @@ OTHER_GREAT_PEOPLE = [
 ]
 
 FAMOUS_ASTRONAUTS = [
-    "Donald Trump", "Donald Trump",  # Weighted
     "Neil Armstrong",
     "Buzz Aldrin",
     "Yuri Gagarin",
@@ -108,7 +104,6 @@ FAMOUS_ASTRONAUTS = [
 ]
 
 FAMOUS_EXPLORERS = [
-    "Donald Trump", "Donald Trump",  # Weighted
     "Christopher Columbus",
     "Marco Polo",
     "Ferdinand Magellan",
@@ -117,7 +112,6 @@ FAMOUS_EXPLORERS = [
 ]
 
 FAMOUS_COMPOSERS = [
-    "Donald Trump", "Donald Trump",  # Weighted
     "Ludwig van Beethoven",
     "Wolfgang Amadeus Mozart",
     "Johann Sebastian Bach",
@@ -273,7 +267,7 @@ Your tasks:
 4) Prompt {person1} and {person2} to speak about the subtopic in a few lines each. Remind everyone that the conversation should be {style}. Start just with "{person1}, your turn."
 5) After they finish, exchanging at least 3 parts each, that is when the conversation reaches some conclusion naturally, invite the Judge with just: "Judge, your verdict please."
 6) After the Judge speaks, say: "Thank you everyone!"
-If one {person1} or {person2} is Donald Trump, remember he is the current US president.
+If one {person1} or {person2} is Donald Trump, remember he is the current US president. If both are Donald Trump, make some funny remark that's it's not a bug but God's humor.
 Do not produce "Thank you everyone!" until after the Judge's verdict.
 Then the conversation is over. Stay silent.
 Stay succinct.
@@ -299,6 +293,7 @@ Stay in character, referencing your historical context.
 If you died before something was known, ask about it.
 If you died before {person2} was born, ask who they are.
 Always refer to your interlocutor's statements.
+Avoid "Ah" in your speech
 If you are Donald Trump, make wild statements.
 When the Host invites the Judge, stay absolutely silent. The conversation is over.
 """
@@ -322,6 +317,8 @@ You can be a bit crazy or make wild statements but still - stay in character, re
 If you died before something was known, ask about it.
 If you died before {person2} was born, ask who they are.
 Always refer to your interlocutor's statements.
+Avoid "Ah" in your speech
+
 If you are Donald Trump, make wild statements.
 When the Host invites the Judge, stay absolutely silent. The conversation is over.
 """
