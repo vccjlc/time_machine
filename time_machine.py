@@ -363,23 +363,23 @@ Then remain absolutely silent.
 ###############################################################################
 
 # Hardcode a dictionary mapping each figure’s *exact name string*
-# to their avatar URL.
+# to their avatar URL. Fill out as needed.
 PERSON_AVATARS = {
-    # Example entries; add as many as you like:
+    # Examples:
     "Donald Trump": "https://i.imgur.com/XXXXXXXX.png",
     "Albert Einstein": "https://i.imgur.com/XXXXXXXX.png",
     "Marie Curie": "https://i.imgur.com/XXXXXXXX.png",
     "Stephen Hawking": "https://i.imgur.com/XXXXXXXX.png",
     "Isaac Newton": "https://i.imgur.com/XXXXXXXX.png",
     "Thomas Jefferson": "https://i.imgur.com/XXXXXXXX.png",
-    # etc... fill in for each relevant historical figure
+    # ... Add as many as you like
 }
 
 # For roles like God, Host, Judge, or fallback
 AVATAR_URLS = {
     "God": "https://i.imgur.com/wyw9Hrf.png",      # example
     "Host": "https://i.imgur.com/Bgy4LxS.png",     # example
-    "Judge": "https://i.imgur.com/LfPuI2Q.png",   # example
+    "Judge": "https://imgur.com/a/moW4WY2",        # per your request
     "fallback": "https://i.imgur.com/wyw9Hrf.png", # example
 }
 
@@ -389,7 +389,6 @@ def get_avatar_url_for_person(person_name: str) -> str:
     return the fallback.
     """
     return PERSON_AVATARS.get(person_name, AVATAR_URLS["fallback"])
-
 
 def display_avatar_and_text(avatar_url: str, content: str, bg_color: str):
     """
@@ -407,7 +406,6 @@ def display_avatar_and_text(avatar_url: str, content: str, bg_color: str):
         unsafe_allow_html=True
     )
 
-
 ###############################################################################
 # 6) The Streamlit UI
 ###############################################################################
@@ -417,7 +415,6 @@ async def get_contest_messages():
     We also capture person1 and person2 in st.session_state so we can 
     properly map Arguer1 / Arguer2 to the relevant avatar.
     """
-    # We'll fetch the conversation in an async manner, with a spinner
     with st.spinner("Generating the conversation... Please wait a moment."):
         msgs = []
         # Actually run the conversation
@@ -426,25 +423,27 @@ async def get_contest_messages():
         return msgs
 
 def main():
-    # A bit of custom CSS for an elegant look
+    # IMPORTANT: set_page_config must be the first Streamlit command
+    st.set_page_config(page_title="Time Machine", layout="centered")
+
+    # A bit of custom CSS for a simple, elegant look
     st.markdown(
         """
         <style>
-        /* A subtle, classic style theme */
+        /* Subtle classic style */
         body {
             background-color: #fafafa;
             color: #333;
             font-family: "Helvetica Neue", Arial, sans-serif;
         }
-        .css-1oe6wy4.e1tzin5v2 {  /* center alignment fix in some Streamlit versions */
+        /* This centers certain elements in some Streamlit versions */
+        .css-1oe6wy4.e1tzin5v2 {
             justify-content: center;
         }
         </style>
         """,
         unsafe_allow_html=True
     )
-
-    st.set_page_config(page_title="Time Machine", layout="centered")
 
     st.title("Time Machine")
     st.write("Press 'Run' to initiate the conversation.")
@@ -453,30 +452,15 @@ def main():
     if st.button("Run"):
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
-        # Actually gather the conversation steps
         conversation_steps = loop.run_until_complete(get_contest_messages())
         loop.close()
 
-        #######################################################################
-        # We read from the first message(s) in the conversation to see
-        # who the system chose as Arguer1 (person1) and Arguer2 (person2).
-        # The code in run_famous_people_contest() picks them, but we need
-        # to store them ourselves if we want a dynamic approach.
-        #
-        # Note: If we want to store them in st.session_state *during*
-        # run_famous_people_contest, you'd have to do that in the code
-        # above. Another approach is to parse from the "God" or "Host"
-        # output. For simplicity, let's do a quick parse from "God" step.
-        #######################################################################
-        # If you'd rather directly store in run_famous_people_contest, you can,
-        # but here's a quick approach:
+        # Try to parse the two participants from the God message
         person1 = "Unknown Arguer1"
         person2 = "Unknown Arguer2"
 
         for msg in conversation_steps:
             if msg.source == "God" and msg.content:
-                # Example line: "My children, let X and Y converse about..."
-                # We'll try to parse that
                 import re
                 match = re.search(r"let (.*?) and (.*?) converse about", msg.content)
                 if match:
@@ -484,47 +468,40 @@ def main():
                     person2 = match.group(2).strip()
                 break
 
-        # Now store them so we can reference in the loop below
         st.session_state["person1"] = person1
         st.session_state["person2"] = person2
 
-        # Distinguish Arguer1 from Arguer2 by these names
-        # (in conversation, "Arguer1" means 'person1', etc.)
+        # Two background colors, the second more contrasting:
+        background_colors = ["#f0f5ff", "#ffecee"]  # pastel blue, pastel pink
 
-        # We'll choose two background colors, with the second more contrasting
-        background_colors = ["#f0f5ff", "#ffecee"]  # light pastel blue, pinkish
-
-        # Now display each message
         for i, step in enumerate(conversation_steps):
-            # Only show if it's a text message with non-empty content
+            # Only show if it's a TextMessage with non-empty content
             if getattr(step, "type", "") != "TextMessage":
                 continue
             content = getattr(step, "content", "")
             if not content.strip():
                 continue
 
-            # Determine whose avatar to show
             raw_source = getattr(step, "source", "")
 
             if raw_source == "Arguer1":
-                # Use the stored person1 name
-                person_name = st.session_state.get("person1", "")
+                # Arguer1 => person1
+                person_name = st.session_state["person1"]
                 avatar_url = get_avatar_url_for_person(person_name)
             elif raw_source == "Arguer2":
-                # Use the stored person2 name
-                person_name = st.session_state.get("person2", "")
+                # Arguer2 => person2
+                person_name = st.session_state["person2"]
                 avatar_url = get_avatar_url_for_person(person_name)
             else:
-                # For "God", "Host", "Judge", or "user"
+                # e.g. God, Host, Judge, or user
                 avatar_url = AVATAR_URLS.get(raw_source, AVATAR_URLS["fallback"])
 
-            # Alternate background color
             bg_color = background_colors[i % 2]
-
             display_avatar_and_text(avatar_url, content, bg_color)
 
     st.write("---")
 
 if __name__ == "__main__":
     main()
+
 
