@@ -473,7 +473,7 @@ def main():
     st.markdown(
         """
         <div style="display:flex; align-items:center; margin-bottom:1rem;">
-            <img src="https://i.imgur.com/b3vBliL.png" style="width:50px; margin-right:15px;" />
+            <img src="https://i.imgur.com/gqyfdYm.png" style="width:50px; margin-right:15px;" />
             <h1 style="margin:0; font-size:2.2rem;">Time Machine</h1>
         </div>
         """,
