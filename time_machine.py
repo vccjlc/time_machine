@@ -352,7 +352,7 @@ Then remain absolutely silent.
         termination_condition=termination_condition
     )
 
-    async for msg in chat.run_stream(task="Dear God, please speak!):
+    async for msg in chat.run_stream(task="Dear God, please speak!"):
         yield msg  # yield each conversation step
 
 ###############################################################################
