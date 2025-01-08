@@ -428,7 +428,7 @@ async def get_contest_messages():
     We also capture person1 and person2 in st.session_state so we can 
     properly map Arguer1 / Arguer2 to the relevant avatar.
     """
-    with st.spinner("Agents are talking!"):
+    with st.spinner("Generating the conversation... Please wait a moment."):
         msgs = []
         # Run the conversation WITHOUT a user task:
         async for m in chat.run_stream():  # <-- changed from 'task="Dear God..."'
@@ -460,12 +460,163 @@ def main():
 
     st.title("Time Machine")
     st.write("Press 'Run' to initiate the conversation.")
-    st.write("_It may take a few seconds to generate the entire dialogue_")
+    st.write("_It may take a few seconds to generate the entire dialogue..._")
 
     if st.button("Run"):
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
-        # 1) Create the conversation object (
+        # 1) Create the conversation object (i.e. chat = SelectorGroupChat(...))
+        #    which was built in run_famous_people_contest but not stored.
+        #    So we must re-import or re-initialize the same variables from there.
+        # 
+        #    Or, simpler: We'll call run_famous_people_contest() to yield us `msg`,
+        #    but we need to store that chat object outside. Let's do:
+        conversation_steps = loop.run_until_complete(get_contest_messages())
+        loop.close()
+
+        # 2) Try to parse the two participants from the God message
+        person1 = "Unknown Arguer1"
+        person2 = "Unknown Arguer2"
+        import re
+
+        for msg in conversation_steps:
+            # Make sure .source and .content exist
+            if not hasattr(msg, "source") or not hasattr(msg, "content"):
+                continue
+
+            if msg.source == "God" and msg.content:
+                match = re.search(r"let (.*?) and (.*?) converse about", msg.content)
+                if match:
+                    person1 = match.group(1).strip()
+                    person2 = match.group(2).strip()
+                break
+
+        st.session_state["person1"] = person1
+        st.session_state["person2"] = person2
+
+        # Two background colors: first a pastel blue, second a subtle pink
+        background_colors = ["#f0f5ff", "#ffe9f0"]
+
+        for i, step in enumerate(conversation_steps):
+            if not hasattr(step, "type") or step.type != "TextMessage":
+                continue
+            content = getattr(step, "content", "")
+            if not content.strip():
+                continue
+
+            raw_source = getattr(step, "source", None)
+            if not raw_source:
+                continue  # skip if no source
+
+            # Map Arguer1 / Arguer2 -> actual person name
+            if raw_source == "Arguer1":
+                avatar_url = get_avatar_url_for_person(st.session_state["person1"])
+            elif raw_source == "Arguer2":
+                avatar_url = get_avatar_url_for_person(st.session_state["person2"])
+            else:
+                # e.g. God, Host, Judge, user
+                avatar_url = AVATAR_URLS.get(raw_source, AVATAR_URLS["fallback"])
+
+            bg_color = background_colors[i % 2]
+            display_avatar_and_text(avatar_url, content, bg_color)
+
+    st.write("---")
+
+# Now we must define the chat object globally or re-import it:
+# We'll just replicate the partial creation from run_famous_people_contest
+# so that `chat` is accessible in get_contest_messages. 
+# (Alternatively, you could rewrite run_famous_people_contest() so it doesn't
+# create/return chat ephemeral, but we'll do a minimal fix here.)
+
+from autogen_agentchat.teams import SelectorGroupChat
+
+# Rebuild the same participants and chat object from above so run_stream() is accessible:
+model_client = OpenAIChatCompletionClient(
+    api_key=st.secrets["openai"]["OPENAI_API_KEY"],
+    model="gpt-4o-mini",
+    temperature=1.0
+)
+
+person1, person2 = pick_two_people()
+topic = pick_random_topic()
+style = decide_style()
+
+# 1) God
+god_system_message = f"""
+You are God.
+Output exactly one short line, then remain silent:
+"My children, let {person1} and {person2} converse about '{topic}' with a {style} flavor. Host, your turn!"
+Then remain absolutely silent afterward.
+"""
+god_agent = AssistantAgent(
+    name="God",
+    description="A deity that briefly introduces the conversation, then is silent.",
+    system_message=god_system_message,
+    model_client=model_client,
+    tools=[]
+)
+
+# 2) Host
+host_system_message = f"""
+You are the Host.
+(etc. same as above) 
+"""
+host_agent = AssistantAgent(
+    name="Host",
+    description="Introduces conversation, calls Judge, ends show with THE_END.",
+    system_message=host_system_message,
+    model_client=model_client,
+    tools=[]
+)
+
+# 3) Arguer1
+arguer1_system_message = f"""
+(etc.)
+"""
+arguer1_agent = AssistantAgent(
+    name="Arguer1",
+    description=f"Represents {person1}",
+    system_message=arguer1_system_message,
+    model_client=model_client,
+    tools=[]
+)
+
+# 4) Arguer2
+arguer2_system_message = f"""
+(etc.)
+"""
+arguer2_agent = AssistantAgent(
+    name="Arguer2",
+    description=f"Represents {person2}",
+    system_message=arguer2_system_message,
+    model_client=model_client,
+    tools=[]
+)
+
+# 5) Judge
+judge_system_message = """
+(etc.)
+"""
+judge_agent = AssistantAgent(
+    name="Judge",
+    description="Gives a short verdict, then silent.",
+    system_message=judge_system_message,
+    model_client=model_client,
+    tools=[]
+)
+
+termination_condition = TextMentionTermination("Thank you everyone!")
+participants = [god_agent, host_agent, arguer1_agent, arguer2_agent, judge_agent]
+
+chat = SelectorGroupChat(
+    participants=participants,
+    model_client=model_client,
+    allow_repeated_speaker=True,
+    termination_condition=termination_condition
+)
+
+if __name__ == "__main__":
+    main()
 
 
 
