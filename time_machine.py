@@ -16,6 +16,7 @@ from autogen_agentchat.conditions import TextMentionTermination
 # 1) Lists of famous individuals by category
 ###############################################################################
 FAMOUS_PHYSICISTS = [
+    "Donald Trump", "Donald Trump",  # Weighted
     "Albert Einstein",
     "Richard Feynman",
     "Marie Curie",
@@ -27,7 +28,7 @@ FAMOUS_PHYSICISTS = [
 ]
 
 FAMOUS_POLITICIANS = [
-    "Donald Trump", "Donald Trump",  # Weighted for comedic effect
+    "Donald Trump", "Donald Trump",  # Weighted
     "Barack Obama",
     "Winston Churchill",
     "Abraham Lincoln",
@@ -39,6 +40,7 @@ FAMOUS_POLITICIANS = [
 ]
 
 FAMOUS_MATHEMATICIANS = [
+    "Donald Trump", "Donald Trump",  # Weighted
     "Alan Turing",
     "Ada Lovelace",
     "Leonhard Euler",
@@ -48,6 +50,7 @@ FAMOUS_MATHEMATICIANS = [
 ]
 
 FAMOUS_PHILOSOPHERS = [
+    "Donald Trump", "Donald Trump",  # Weighted
     "Plato",
     "Aristotle",
     "Friedrich Nietzsche",
@@ -57,6 +60,7 @@ FAMOUS_PHILOSOPHERS = [
 ]
 
 FAMOUS_SPORTS_PEOPLE = [
+    "Donald Trump", "Donald Trump",  # Weighted
     "Michael Jordan",
     "Muhammad Ali",
     "Serena Williams",
@@ -66,6 +70,7 @@ FAMOUS_SPORTS_PEOPLE = [
 ]
 
 FAMOUS_CELEBRITIES = [
+    "Donald Trump", "Donald Trump",  # Weighted
     "Oprah Winfrey",
     "Kim Kardashian",
     "Dwayne Johnson",
@@ -75,6 +80,7 @@ FAMOUS_CELEBRITIES = [
 ]
 
 FAMOUS_US_PRESIDENTS = [
+    "Donald Trump", "Donald Trump",  # Weighted
     "George Washington",
     "Thomas Jefferson",
     "Theodore Roosevelt",
@@ -83,6 +89,7 @@ FAMOUS_US_PRESIDENTS = [
 ]
 
 OTHER_GREAT_PEOPLE = [
+    "Donald Trump", "Donald Trump",  # Weighted
     "William Shakespeare",
     "Leonardo da Vinci",
     "Napoleon Bonaparte",
@@ -92,6 +99,7 @@ OTHER_GREAT_PEOPLE = [
 ]
 
 FAMOUS_ASTRONAUTS = [
+    "Donald Trump", "Donald Trump",  # Weighted
     "Neil Armstrong",
     "Buzz Aldrin",
     "Yuri Gagarin",
@@ -100,6 +108,7 @@ FAMOUS_ASTRONAUTS = [
 ]
 
 FAMOUS_EXPLORERS = [
+    "Donald Trump", "Donald Trump",  # Weighted
     "Christopher Columbus",
     "Marco Polo",
     "Ferdinand Magellan",
@@ -108,6 +117,7 @@ FAMOUS_EXPLORERS = [
 ]
 
 FAMOUS_COMPOSERS = [
+    "Donald Trump", "Donald Trump",  # Weighted
     "Ludwig van Beethoven",
     "Wolfgang Amadeus Mozart",
     "Johann Sebastian Bach",
@@ -130,7 +140,7 @@ ALL_CATEGORIES = [
 ]
 
 ###############################################################################
-# 2) Topics (UNCHANGED)
+# 2) Topics
 ###############################################################################
 UNEXPECTED_TOPICS = [
     "conspiracy theories",
@@ -188,11 +198,10 @@ FAMOUS_CONTESTS = [
     "Baking contest",
 ]
 
-# Extend
 UNEXPECTED_TOPICS.extend(FAMOUS_CONTESTS)
 
 ###############################################################################
-# 3) Helper functions (UNCHANGED)
+# 3) Helper functions
 ###############################################################################
 def pick_two_people() -> tuple[str, str]:
     random.shuffle(ALL_CATEGORIES)
@@ -219,21 +228,19 @@ def decide_style() -> str:
         return "moderate"
 
 ###############################################################################
-# 4) The main multi-agent function (NO DECORATOR, NO THEME)
+# 4) The main multi-agent function
 ###############################################################################
 async def run_famous_people_contest():
     """
-    We do a short conversation among:
+    We are going to have a short conversation between:
       - God (one-line)
       - Host (introduces two famous people & calls Judge)
       - Two arguers
       - A Judge (one-line verdict)
-
-    The 'Decorator' is removed, so no theme picking.
     """
     model_client = OpenAIChatCompletionClient(
         api_key=st.secrets["openai"]["OPENAI_API_KEY"],
-        model="gpt-4o-mini",  # You said this model is valid in your environment
+        model="gpt-4o-mini",
         temperature=1.0
     )
 
@@ -243,7 +250,7 @@ async def run_famous_people_contest():
 
     # 1) God
     god_system_message = f"""
-You are GOD.
+You are God.
 Output exactly one short line, then remain silent:
 "My children, let {person1} and {person2} converse about '{topic}' with a {style} flavor. Host, your turn!"
 Then remain absolutely silent afterward.
@@ -260,12 +267,14 @@ Then remain absolutely silent afterward.
     host_system_message = f"""
 You are the Host.
 Your tasks:
-1) Choose a subtopic of {topic}. It must be something specific. For example, if the topic is "riddles", you must give a riddle. If the {topic} is a contest, you must run the contest!
-1) Thank God saying "Thanks, God!". Then very briefly introduce {person1} (just this: born-died year, who they are) and {person2} (just this: born-died year, who they are) and mention the subtopic.
-2) Prompt {person1} and {person2} to speak about the subtopic in a few lines each. Remind everyone that the conversation should be {style}. Start just with "{person1}, your turn."
-3) After they finish, that is when the conversation reaches some conclusion, invite the Judge with just: "Judge, your verdict please."
-4) After the Judge speaks, say: "Thank you everyone!"
+1) Wait for the God to speak. God will introduce guests and the topic, and say "Host, your turn!". It means it's your time to speak.
+2) Choose a subtopic of {topic}. It must be something specific. For example, if the topic is "riddles", you must give a riddle. If the {topic} is a contest, you must run the contest!
+3) Thank God saying "Thanks, God!". Then very briefly introduce {person1} (just this: born-died year, who they are) and {person2} (just this: born-died year, who they are) and mention the subtopic.
+4) Prompt {person1} and {person2} to speak about the subtopic in a few lines each. Remind everyone that the conversation should be {style}. Start just with "{person1}, your turn."
+5) After they finish, exchanging at least 3 parts each, that is when the conversation reaches some conclusion naturally, invite the Judge with just: "Judge, your verdict please."
+6) After the Judge speaks, say: "Thank you everyone!"
 Do not produce "Thank you everyone!" until after the Judge's verdict.
+Then the conversation is over. Stay silent.
 Stay succinct.
 """
     host_agent = AssistantAgent(
@@ -287,6 +296,7 @@ Stay in character, referencing your historical context.
 If you died before something was known, ask about it.
 If you died before {person2} was born, ask who they are.
 Always refer to your interlocutor's statements.
+When the Host invites the Judge, stay absolutely silent. The conversation is over.
 """
     arguer1_agent = AssistantAgent(
         name="Arguer1",
@@ -307,6 +317,7 @@ Stay in character, referencing your historical context.
 If you died before something was known, ask about it.
 If you died before {person2} was born, ask who they are.
 Always refer to your interlocutor's statements.
+When the Host invites the Judge, stay absolutely silent. The conversation is over.
 """
     arguer2_agent = AssistantAgent(
         name="Arguer2",
@@ -318,8 +329,8 @@ Always refer to your interlocutor's statements.
 
     # 5) Judge
     judge_system_message = """
-You are the Judge. When the Host asks you about the verdict:
-Summarize the conversation in one short line, then declare a winner. If there is no clear winner, say you are biased and you like {person1} more so thy are a winner. All in one sentence.
+You are the Judge. When the Host asks you about the verdict (this will happen after arguers exchanged their arguments):
+Summarize the conversation in one short line, then declare a winner. If there is no clear winner, say you are biased and you like {person1} more so they are a winner. All in one sentence.
 Then remain absolutely silent.
 """
     judge_agent = AssistantAgent(
@@ -361,7 +372,7 @@ AVATAR_URLS = {
 # 6) The Streamlit UI
 ###############################################################################
 def display_avatar_and_text(avatar_url: str, content: str):
-    """Render a message with avatar, no name displayed."""
+    """Render a message with an avatar, no name displayed."""
     st.markdown(
         # previous background #f9f9f9
         f"""
