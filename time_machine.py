@@ -463,7 +463,7 @@ def main():
     )
 
     st.write("Press **Run** to initiate the conversation.")
-    st.write("_It may take a few seconds to generate the entire dialogue..._")
+    st.write("_It may take a few seconds to generate the entire dialogue_")
 
     if st.button("Run"):
         # We create a new event loop, run the conversation, then close it
