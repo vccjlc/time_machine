@@ -425,21 +425,25 @@ def display_avatar_and_text(avatar_url: str, content: str, bg_color: str):
 ###############################################################################
 async def get_contest_messages():
     """
-    Runs the multi-agent conversation and returns all messages.
-    Using 'Dear God, please speak!' as the user prompt to start the conversation.
+    Runs the multi-agent conversation and returns all messages,
+    starting with 'Dear God, please speak!' for the user prompt.
+
+    We add debug prints (st.write) so we can see each message
+    as it arrives from chat.run_stream.
     """
-    with st.spinner("_Agents are talking_"):
+    with st.spinner("Agents are talking"):
         msgs = []
-        # Start conversation with user prompt
+        # Start conversation
         async for m in chat.run_stream(task="Dear God, please speak!"):
+            # Show debug info right away
+            st.write(f"DEBUG: Received message from {getattr(m, 'source', 'unknown')} → {getattr(m, 'content', '')}")
             msgs.append(m)
         return msgs
 
 def main():
-    # Must be first Streamlit command
     st.set_page_config(page_title="Time Machine", layout="centered")
 
-    # Subtle gradient background + minimal styling (no custom button styling)
+    # Gradient background, minimal styling
     st.markdown(
         """
         <style>
@@ -458,7 +462,7 @@ def main():
         unsafe_allow_html=True
     )
 
-    # Title area with a clock image
+    # Title with clock icon
     st.markdown(
         """
         <div style="display:flex; align-items:center; margin-bottom:1rem;">
@@ -470,7 +474,7 @@ def main():
     )
 
     st.write("Press **Run** to initiate the conversation.")
-    st.write("_It may take a few seconds to generate the entire dialogue._")
+    st.write("_It may take a few seconds to generate the entire dialogue..._")
 
     if st.button("Run"):
         loop = asyncio.new_event_loop()
@@ -481,6 +485,7 @@ def main():
         # Attempt to parse who Arguer1 and Arguer2 are from the God message
         person1 = "Unknown Arguer1"
         person2 = "Unknown Arguer2"
+
         import re
         for msg in conversation_steps:
             if not hasattr(msg, "source") or not hasattr(msg, "content"):
@@ -495,11 +500,10 @@ def main():
         st.session_state["person1"] = person1
         st.session_state["person2"] = person2
 
-        # Alternating pastel colors
+        # Two pastel colors
         background_colors = ["#f0f5ff", "#ffe9f0"]
 
         for i, step in enumerate(conversation_steps):
-            # Only text messages with non-empty content
             if getattr(step, "type", "") != "TextMessage":
                 continue
             content = getattr(step, "content", "")
@@ -510,13 +514,13 @@ def main():
             if not raw_source:
                 continue
 
-            # If Arguer1 or Arguer2, use the person's avatar
+            # If Arguer1/Arguer2, map to the real person's avatar
             if raw_source == "Arguer1":
                 avatar_url = get_avatar_url_for_person(st.session_state["person1"])
             elif raw_source == "Arguer2":
                 avatar_url = get_avatar_url_for_person(st.session_state["person2"])
             else:
-                # e.g. God, Host, Judge, user, or unknown
+                # e.g. God, Host, Judge, user, etc.
                 avatar_url = AVATAR_URLS.get(raw_source, AVATAR_URLS["fallback"])
 
             bg_color = background_colors[i % 2]
@@ -524,96 +528,10 @@ def main():
 
     st.write("---")
 
-# Make the chat object globally so get_contest_messages() can use it
-from autogen_agentchat.teams import SelectorGroupChat
-
-model_client = OpenAIChatCompletionClient(
-    api_key=st.secrets["openai"]["OPENAI_API_KEY"],
-    model="gpt-4o-mini",
-    temperature=1.0
-)
-
-# Exactly as in run_famous_people_contest, define participants:
-
-person1, person2 = pick_two_people()
-topic = pick_random_topic()
-style = decide_style()
-
-god_system_message = f"""
-You are God.
-Output exactly one short line, then remain silent:
-"My children, let {person1} and {person2} converse about '{topic}' with a {style} flavor. Host, your turn!"
-Then remain absolutely silent afterward.
-"""
-god_agent = AssistantAgent(
-    name="God",
-    description="A deity that briefly introduces the conversation, then is silent.",
-    system_message=god_system_message,
-    model_client=model_client,
-    tools=[]
-)
-
-host_system_message = f"""
-You are the Host.
-1) Wait for the God to speak...
-(etc.)
-"""
-host_agent = AssistantAgent(
-    name="Host",
-    description="Introduces conversation, calls Judge, ends show with THE_END.",
-    system_message=host_system_message,
-    model_client=model_client,
-    tools=[]
-)
-
-arguer1_system_message = f"""
-You are {person1}.
-(etc.)
-"""
-arguer1_agent = AssistantAgent(
-    name="Arguer1",
-    description=f"Represents {person1}",
-    system_message=arguer1_system_message,
-    model_client=model_client,
-    tools=[]
-)
-
-arguer2_system_message = f"""
-You are {person2}.
-(etc.)
-"""
-arguer2_agent = AssistantAgent(
-    name="Arguer2",
-    description=f"Represents {person2}",
-    system_message=arguer2_system_message,
-    model_client=model_client,
-    tools=[]
-)
-
-judge_system_message = """
-You are the Judge.
-(etc.)
-"""
-judge_agent = AssistantAgent(
-    name="Judge",
-    description="Gives a short verdict, then silent.",
-    system_message=judge_system_message,
-    model_client=model_client,
-    tools=[]
-)
-
-termination_condition = TextMentionTermination("Thank you everyone!")
-participants = [god_agent, host_agent, arguer1_agent, arguer2_agent, judge_agent]
-
-chat = SelectorGroupChat(
-    participants=participants,
-    model_client=model_client,
-    allow_repeated_speaker=True,
-    termination_condition=termination_condition
-)
-
+# Leave the rest of your global participant definitions, chat object, etc. unchanged.
 if __name__ == "__main__":
     main()
+
 
 
 
