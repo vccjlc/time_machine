@@ -367,23 +367,21 @@ Then remain absolutely silent.
 # Replace these with your own URLs. If participant not found, fallback used.
 AVATAR_URLS = {
     "God": "https://i.imgur.com/wyw9Hrf.png",
-    "Host": "https://imgur.com/a/rWmmHva",
+    "Host": "https://imgur.com/a/rWmmHva",  # Example placeholder
     "Arguer1": "https://example.com/arg1.png",
     "Arguer2": "https://example.com/arg2.png",
     "Judge": "https://example.com/judge.png",
     "fallback": "https://i.imgur.com/wyw9Hrf.png",
 }
 
-###############################################################################
-# 6) The Streamlit UI
-###############################################################################
-def display_avatar_and_text(avatar_url: str, content: str):
-    """Render a message with an avatar, no name displayed."""
+def display_avatar_and_text(avatar_url: str, content: str, bg_color: str):
+    # Render a message with an avatar, no name displayed,
+    # using bg_color for the background.
+
     st.markdown(
-        # previous background #f9f9f9
-        f"""
-        <div style="background-color:#dbe3ff; color:#000; padding:10px; 
-                    border-radius:5px; margin-bottom:10px; display:flex;">
+        f"""<div style="background-color:{bg_color}; color:#000; 
+                    padding:10px; border-radius:5px; margin-bottom:10px; 
+                    display:flex; align-items:center;">
             <img src="{avatar_url}" style="width:40px; height:40px; 
                      border-radius:20px; margin-right:10px;" />
             <div>{content}</div>
@@ -392,6 +390,9 @@ def display_avatar_and_text(avatar_url: str, content: str):
         unsafe_allow_html=True
     )
 
+###############################################################################
+# 6) The Streamlit UI
+###############################################################################
 async def get_contest_messages():
     msgs = []
     async for m in run_famous_people_contest():
@@ -410,33 +411,35 @@ def main():
         conversation_steps = loop.run_until_complete(get_contest_messages())
         loop.close()
 
+        # Map .source to keys in AVATAR_URLS
         source_map = {
             "God": "God",
             "Host": "Host",
             "Arguer1": "Arguer1",
             "Arguer2": "Arguer2",
             "Judge": "Judge",
-            "user": "fallback",  # Or create a special "user" avatar
+            "user": "fallback",  # We'll fallback for user
         }
 
-        # conversation_steps = [TaskResult(...), TaskResult(...), ...]
-        for step in conversation_steps:
-            agent_name = getattr(step, "agent_name", "")
+        # Two background colors to alternate
+        background_colors = ["#f0f5ff", "#e8f0ff"]  # Light modern blues
+
+        for i, step in enumerate(conversation_steps):
+            # Only display if it's a TextMessage with non-empty content
+            if getattr(step, "type", "") != "TextMessage":
+                continue
+
             content = getattr(step, "content", "")
             if not content.strip():
-            # Skip empty messages
                 continue
-            # otherwise display
-            if not agent_name:
-                agent_name = "fallback"
-            
-            st.write(step)  # Inspect the full structure of `step`
 
-            # Find matching avatar
-            avatar_url = AVATAR_URLS.get(agent_name, AVATAR_URLS["fallback"])
+            raw_source = getattr(step, "source", "")
+            mapped_source = source_map.get(raw_source, "fallback")
 
-            # Display with no speaker name, only avatar + content
-            display_avatar_and_text(avatar_url, content)
+            avatar_url = AVATAR_URLS.get(mapped_source, AVATAR_URLS["fallback"])
+            bg_color = background_colors[i % 2]  # Alternate backgrounds
+
+            display_avatar_and_text(avatar_url, content, bg_color)
 
     st.write("---")
 
