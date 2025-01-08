@@ -404,7 +404,7 @@ def main():
 
     st.title("Time Machine")
     st.write("Press 'Run' to initiate the conversation.")
-    st.write("_Allow a few seconds for generation. The full conversation should appear shortly._")
+    st.write("_Allow a few seconds for generation. The full conversation will appear shortly after you press the button._")
 
     if st.button("Run"):
         loop = asyncio.new_event_loop()
