@@ -313,7 +313,7 @@ When the Host invites the Judge, stay absolutely silent. The conversation is ove
     arguer2_system_message = f"""
 You are {person2}.
 You are conversing with {person1} about '{topic}' in a {style} style.
-Your speech should be short - one sentence in each part, max two.
+Your speech should be short - one sentence in each part, max two. Use one-liners towards the end of the conversation.
 The most important rule: use speech to mimic the {person1} actual speech.
 Be competitive and reasonably disagree with {person1} statements.
 Refer to your interlocutor's statements to keep the conversation going.
@@ -409,7 +409,7 @@ PERSON_AVATARS = {
     "Kim Kardashian": "https://i.imgur.com/KyPr6YO.png",
     "Dwayne Johnson": "https://i.imgur.com/Y7qsuUR.png",
     "Taylor Swift": "https://i.imgur.com/UPnlP2R.png",
-    "Beyoncé": "https://i.imgur.com/Vtgo2Hi.png",
+    "Beyoncé": "https://i.imgur.com/RpRyUAj.png",
     "Tom Hanks": "https://i.imgur.com/cTrWk5h.png",
     "George Washington": "https://i.imgur.com/tUVCsl1.png",
     "Thomas Jefferson": "https://i.imgur.com/8K25FOc.png",
