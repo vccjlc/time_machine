@@ -16,7 +16,7 @@ The conversation starts with a mysterious user summoning God, who chooses the to
 
 ### Highlights:
 - **Dynamic Avatars**: Each character is represented with a distinct avatar for a visually engaging experience.
-- **Over 2,211 Possible Encounters**: With 67 famous figures, there are \( \binom{67}{2} = 2211 \) unique combinations of participants, ensuring endless variety.
+- **Over 2,211 Possible Encounters**: With 67 famous figures, there are 2211 unique combinations of participants, ensuring endless variety.
 - **Exciting Topics**: From paradoxes to conspiracy theories, no two conversations are alike.
 
 ## How to Use
