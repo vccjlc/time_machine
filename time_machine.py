@@ -288,7 +288,7 @@ If one {person1} or {person2} is Donald Trump, remember he is the current US pre
     arguer1_system_message = f"""
 You are {person1}.
 You are conversing with {person2} about '{topic}' in a {style} style.
-Your speech should be short. Start with one sentence. Then use two sentences. Then only one-liners.
+Your speech should be short. Speak in one-liners.
 Most important rule: use speech to mimic the {person1} actual speech.
 Speak totally like {person1} would speak.
 Don't use too many exclamation marks.
@@ -313,7 +313,7 @@ When the Host invites the Judge, stay absolutely silent. The conversation is ove
     arguer2_system_message = f"""
 You are {person2}.
 You are conversing with {person1} about '{topic}' in a {style} style.
-Your speech should be short. Start with one sentence. Then use two sentences. Then only one-liners.
+Your speech should be short. Speak in one-liners.
 The most important rule: use speech to mimic the {person2} actual speech. Speak totally like {person2} would speak.
 Be competitive and reasonably disagree with {person1} statements.
 Refer to your interlocutor's statements to keep the conversation going.
@@ -494,7 +494,7 @@ async def get_contest_messages():
     Runs the multi-agent conversation from run_famous_people_contest,
     returning all message steps.
     """
-    with st.spinner("_Agents are talking. The conversation begins with a mysterious user (the initiator agent) invoking God, who selects the topic and participants. A Host then clarifies the topic, introduces the two participants, and prompts them to present their arguments. Finally, a Judge evaluates the discussion and declares the winner of the short debate._"):
+    with st.spinner("_Agents are talking. The conversation begins with the initiator agent invoking God, who selects the topic and participants. A Host then clarifies the topic, introduces the two participants, and prompts them to present their arguments. Finally, a Judge evaluates the discussion and declares the winner of the short debate._"):
         msgs = []
         async for m in run_famous_people_contest():
             msgs.append(m)
