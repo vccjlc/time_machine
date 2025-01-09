@@ -1,4 +1,4 @@
-# **Go to [here]([url](https://timemachinejanparaniak.streamlit.app/](https://timemachinejanparaniak.streamlit.app/)) to launch the app with one click and enjoy the timeless conversations!**
+# **Go to [here](https://timemachinejanparaniak.streamlit.app/](https://timemachinejanparaniak.streamlit.app/) to launch the app with one click and enjoy the timeless conversations!**
 
 ## About the App
 
