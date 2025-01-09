@@ -420,7 +420,7 @@ PERSON_AVATARS = {
     "Genghis Khan": "https://i.imgur.com/mwl10rQ.png",
     "Neil Armstrong": "https://i.imgur.com/3Ru5xbR.png",
     "Buzz Aldrin": "https://i.imgur.com/Y7xLrjJ.png",
-    "Yuri Gagarin": "https://i.imgur.com/R8LpKXH.png",
+    "Yuri Gagarin": "https://i.imgur.com/eN7rs5y.png",
     "Sally Ride": "https://i.imgur.com/46gNQ3J.png",
     "Chris Hadfield": "https://i.imgur.com/q4Rn2sS.png",
     "Christopher Columbus": "https://i.imgur.com/39G5x9d.png",
