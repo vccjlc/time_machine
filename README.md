@@ -1,7 +1,7 @@
 # Launch the Time Machine App 🚀
 
-<a href="https://timemachinejanparaniak.streamlit.app/" target="_blank" style="display: inline-block; padding: 10px 20px; font-size: 1.2rem; font-weight: bold; color: white; background-color: #4CAF50; text-decoration: none; border-radius: 8px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
-    ### Click Here to Launch the App
+<a href="https://timemachinejanparaniak.streamlit.app/" target="_blank" style="display: inline-block; padding: 10px 20px; font-size: 1.2rem; font-weight: bold; color: white; background-color: #4CAF50; text-decoration: none; border-radius: 10px; box-shadow: 0 6px 8px rgba(0, 0, 0, 0.1);">
+    Click Here to Launch the App
 </a>
 
 Enjoy the timeless conversations!
