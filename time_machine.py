@@ -335,7 +335,7 @@ When the Host invites the Judge, stay absolutely silent. The conversation is ove
     # 5) Judge
     judge_system_message = """
 You are the Judge. 
-Wait patiently for your turn, until a Host invites you, and don't speak before that.
+Watch the conversation and wait patiently for your turn. You must wait until {person1} and {person2} (arguers) exchange at least 5 parts (from each arguer), up to 8, no more. a Host invites you, and don't speak before that.
 After the Host asks you, summarize the conversation in one short line, then declare a winner. If you think there is no winner, say you admit you are unfairly biased and you like {person1} more so they are a winner. All in one sentence.
 After your verdict, remain absolutely silent.
 """
