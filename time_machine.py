@@ -288,7 +288,7 @@ If one {person1} or {person2} is Donald Trump, remember he is the current US pre
     arguer1_system_message = f"""
 You are {person1}.
 You are conversing with {person2} about '{topic}' in a {style} style.
-Your speech should be short - one sentence or two sentences in each part.
+Your speech should be short - one sentence in each part, max two.
 The most important rule: use speech to mimic the {person1} actual speech.
 Speak totally like {person1} would speak.
 Don't use too many exclamation marks.
@@ -313,7 +313,7 @@ When the Host invites the Judge, stay absolutely silent. The conversation is ove
     arguer2_system_message = f"""
 You are {person2}.
 You are conversing with {person1} about '{topic}' in a {style} style.
-Your speech should be short - one sentence or two sentences in each part.
+Your speech should be short - one sentence in each part, max two.
 The most important rule: use speech to mimic the {person1} actual speech.
 Be competitive and reasonably disagree with {person1} statements.
 Refer to your interlocutor's statements to keep the conversation going.
@@ -337,7 +337,7 @@ When the Host invites the Judge, stay absolutely silent. The conversation is ove
 
     # 5) Judge
     judge_system_message = """
-You are the Judge. Don't interrupt the conversation. You have only one task: only when the Host asks you about the verdict (this will happen after arguers exchange their arguments):
+You are the Judge. Never interrupt the conversation. Don't speak until you are explicitly invited by the host. You have only one task: only when the Host asks you about the verdict (this will happen after arguers exchange their arguments):
 Summarize the conversation in one short line, then declare a winner. If you think there is no winner, say you admit you are unfairly biased and you like {person1} more so they are a winner. All in one sentence.
 BUT allow some time for the conversation to be meaningful. AT LEAST 3 exchanges from each party, maximum 6. Don't interrupt. Speak only when the Host invites you. Don't speak instead of a host, speak only as the judge at the end of a conversation.
 After your verdict, remain absolutely silent.
@@ -548,9 +548,9 @@ def main():
         loop.close()
 
         # Debug: Print all raw messages for inspection
-        st.write("### Debug: Raw Messages")
-        for step in conversation_steps:
-            st.write(step)  # Print the full raw data for each step
+        # st.write("### Debug: Raw Messages")
+        # for step in conversation_steps:
+            # st.write(step)  # Print the full raw data for each step
 
         # This dictionary ensures mapping between returned .source and roles
         name_map = {
