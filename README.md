@@ -4,7 +4,7 @@
     Click Here to Launch the App
 </a>
 
-Wait a few seconds and enjoy the timeless conversations!
+Enjoy the timeless conversations!
 
 ## About the App
 
