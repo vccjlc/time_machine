@@ -583,7 +583,7 @@ def main():
             source_val = getattr(step, "source", "")
 
             # Debug: Print the source and content
-            st.write(f"DEBUG: Agent: {source_val}, Content: {content}")
+            # st.write(f"DEBUG: Agent: {source_val}, Content: {content}")
 
             if not content.strip():
                 continue  # skip empty
