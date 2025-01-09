@@ -12,7 +12,7 @@ Enjoy the timeless conversations!
 
 The topics range from fun facts and philosophical debates to hypothetical "would-you-rather" questions. The dialogue is styled to reflect the personalities of the chosen figures, making every encounter as entertaining as it is insightful.
 
-The conversation starts with a mysterious user calling upon God, who chooses the topic and participants. A Host clarifies the topic, introduces two participants, and facilitates the discussion, guiding the arguers to present their arguments, while a Judge delivers the verdict, declaring the winner of the short debate.
+The conversation starts with a mysterious user calling upon God, who selects the topic and participants. A Host clarifies the topic, introduces the two participants, and guides them in presenting their arguments, while a Judge delivers the verdict, declaring the winner of the short debate.
 
 
 ### Highlights:
