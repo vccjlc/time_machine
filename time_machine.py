@@ -462,8 +462,8 @@ def main():
         unsafe_allow_html=True
     )
 
-    st.write("Press **Run** to initiate the conversation.")
-    st.write("_It may take a few seconds to generate the entire dialogue..._")
+    st.write("Press **Run** to initiate the conversation")
+    st.write("_It may take a few seconds to generate the entire dialogue_")
 
     if st.button("Run"):
         loop = asyncio.new_event_loop()
