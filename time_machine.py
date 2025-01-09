@@ -180,20 +180,6 @@ UNEXPECTED_TOPICS = [
     "famous quotes",
 ]
 
-FAMOUS_CONTESTS = [
-    "Jeopardy-like trivia game",
-    "Duel of wits",
-    "Rap battle",
-    "Chess match",
-    "Cooking showdown",
-    "Rock-paper-scissors",
-    "Talent show competition",
-    "Arm-wrestling match",
-    "Baking contest",
-]
-
-UNEXPECTED_TOPICS.extend(FAMOUS_CONTESTS)
-
 ###############################################################################
 # 3) Helper functions
 ###############################################################################
