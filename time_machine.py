@@ -381,7 +381,7 @@ PERSON_AVATARS = {
 # 2) Generic role-based avatars
 AVATAR_URLS = {
     "God": "https://i.imgur.com/wyw9Hrf.png",
-    "Host": "https://i.imgur.com/9N3khIw.png",
+    "Host": "https://i.imgur.com/wPB4Z0u.png",
     "Arguer1": "https://i.imgur.com/WxgZfQC.png",
     "Arguer2": "https://i.imgur.com/sqPjzaI.png",
     "Judge": "https://i.imgur.com/kj6uFlA.png",
