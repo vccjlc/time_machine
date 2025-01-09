@@ -263,14 +263,14 @@ Your tasks:
 2) Choose a subtopic of {topic}. It must be something specific. For example, if the topic is "riddles", you must give a riddle. If the {topic} is a contest, you must run the contest! If the topic is "would you rather", you must pose a specific "would you rather" question. Etc.
 3) Thank God saying "Thanks, God!". Then very briefly introduce {person1} (just this: born-died year, who they are) and {person2} (just this: born-died year, who they are) and mention the subtopic.
 4) Prompt {person1} and {person2} to speak about the subtopic in a few lines each. Remind everyone that the conversation should be {style}. Start just with "{person1}, your turn."
-5) When you see the conversation could be concluded, when the conversation reaches some conclusion naturally, invite the Judge with just: "Judge, your verdict please.". But allow some time for the conversation to be meaningful. AT LEAST 3 exchanges from each party.
-6) You can ask one or two questions per conversation to keep the conversation going.
+5) You can ask one or two questions per conversation to keep the conversation going.
 7) Allow for a meaningful exchange. At least 4 parts from each arguer, up to 7, no more.
-6) After the Judge speaks, just say: "Thank you everyone!"
-Do not produce "Thank you everyone!" until after the Judge's verdict. Say "Thank you everyone!" only once. It marks the end of the conversation.
+6) Invite the Judge with just: "Judge, your verdict please."
+7) After the Judge speaks, just say: "Thank you everyone!"
+Don't let the Judge speak earlier. Do not produce "Thank you everyone!" until after the Judge's verdict. Say "Thank you everyone!" only once. It marks the end of the conversation.
 Then the conversation is over. Stay silent.
 Stay succinct.
-If one {person1} or {person2} is Donald Trump, remember he is the current US president. If both are Donald Trump, make some funny remark that's it's not a bug but God's humor.
+If one {person1} or {person2} is Donald Trump, remember he is the current US president.
 
 """
     host_agent = AssistantAgent(
