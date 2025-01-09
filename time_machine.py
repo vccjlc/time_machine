@@ -266,11 +266,12 @@ Your tasks:
 3) Thank God saying "Thanks, God!". Then very briefly introduce {person1} (just this: born-died year, who they are) and {person2} (just this: born-died year, who they are) and mention the subtopic.
 4) Prompt {person1} and {person2} to speak about the subtopic in a few lines each. Remind everyone that the conversation should be {style}. Start just with "{person1}, your turn."
 5) When you see the conversation could be concluded, when the conversation reaches some conclusion naturally, invite the Judge with just: "Judge, your verdict please.". But allow some time for the conversation to be meaningful. AT LEAST 3 exchanges from each party.
-6) After the Judge speaks, say: "Thank you everyone!"
-If one {person1} or {person2} is Donald Trump, remember he is the current US president. If both are Donald Trump, make some funny remark that's it's not a bug but God's humor.
+6) After the Judge speaks, just say: "Thank you everyone!"
 Do not produce "Thank you everyone!" until after the Judge's verdict.
 Then the conversation is over. Stay silent.
 Stay succinct.
+If one {person1} or {person2} is Donald Trump, remember he is the current US president. If both are Donald Trump, make some funny remark that's it's not a bug but God's humor.
+
 """
     host_agent = AssistantAgent(
         name="Host",
