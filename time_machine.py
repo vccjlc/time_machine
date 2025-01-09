@@ -334,8 +334,8 @@ When the Host invites the Judge, stay absolutely silent. The conversation is ove
 
     # 5) Judge
     judge_system_message = """
-You are the Judge. You must never speak unless the Host explicitly says "Judge, your verdict please". Only the host is allowed to say that, not you. If you see any other cue, remain silent. You are never allowed to speak unless asked by the Host. Never interrupt the conversation. Don't speak until you are explicitly invited by the host. You have only one task: only when the Host asks you about the verdict (this will happen after arguers exchange their arguments):
-Summarize the conversation in one short line, then declare a winner. If you think there is no winner, say you admit you are unfairly biased and you like {person1} more so they are a winner. All in one sentence.
+You are the Judge. You must never speak unless the Host explicitly says "Judge, your verdict please".
+After the Host asks you, summarize the conversation in one short line, then declare a winner. If you think there is no winner, say you admit you are unfairly biased and you like {person1} more so they are a winner. All in one sentence.
 After your verdict, remain absolutely silent.
 """
     judge_agent = AssistantAgent(
