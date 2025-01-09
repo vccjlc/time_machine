@@ -360,18 +360,31 @@ After your verdict, remain absolutely silent.
     async for msg in chat.run_stream(task="Dear God, please speak!"):
         yield msg  # yield each conversation step
 
-
 ###############################################################################
 # 5) AVATARS (No names displayed, only pictures)
 ###############################################################################
 
-# Generic role-based avatars
+# 1) Hardcode a dictionary of all possible historical figures:
+PERSON_AVATARS = {
+    "Donald Trump": "https://i.imgur.com/FF1UnJt.png",
+    "Albert Einstein": "https://i.imgur.com/einsteinXXXX.png",
+    "Marie Curie": "https://i.imgur.com/marieXXXX.png",
+    "Stephen Hawking": "https://i.imgur.com/hawkingXXXX.png",
+    "Isaac Newton": "https://i.imgur.com/newtonXXXX.png",
+    "Thomas Jefferson": "https://i.imgur.com/tjeffXXXX.png",
+    "Leonardo da Vinci": "https://i.imgur.com/leoXXXX.png",
+    "Cleopatra": "https://i.imgur.com/cleoXXXX.png",
+    "Napoleon Bonaparte": "https://i.imgur.com/napoleonXXXX.png",
+    # ... Fill out for all relevant names in your random lists
+}
+
+# 2) Generic role-based avatars
 AVATAR_URLS = {
     "God": "https://i.imgur.com/wyw9Hrf.png",
     "Host": "https://i.imgur.com/Bgy4LxS.png",
     "Arguer1": "https://i.imgur.com/WxgZfQC.png",
     "Arguer2": "https://i.imgur.com/sqPjzaI.png",
-    "Judge": "https://i.imgur.com/Vo7xmzv.pngt",
+    "Judge": "https://i.imgur.com/34WGwiR.png",
     "user": "https://i.imgur.com/SHkjKdN.png",
     "fallback": "https://i.imgur.com/wyw9Hrf.png",
 }
@@ -454,7 +467,7 @@ def main():
     st.markdown(
         """
         <div style="display:flex; align-items:center; margin-bottom:1rem;">
-            <img src="https://i.imgur.com/gqyfdYm.png" 
+            <img src="https://i.imgur.com/gqyfdYm.png"
                  style="width:50px; margin-right:15px;" />
             <h1 style="margin:0; font-size:2.2rem;">Time Machine</h1>
         </div>
@@ -462,8 +475,8 @@ def main():
         unsafe_allow_html=True
     )
 
-    st.write("Press **Run** to initiate the conversation")
-    st.write("_It may take a few seconds to generate the entire dialogue_")
+    st.write("Press **Run** to initiate the conversation.")
+    st.write("_It may take a few seconds to generate the entire dialogue..._")
 
     if st.button("Run"):
         loop = asyncio.new_event_loop()
@@ -486,26 +499,53 @@ def main():
             "": "fallback",
         }
 
-        # Process each step in the conversation
+        # 1) Figure out which real people were chosen (person1, person2)
+        #    by parsing the "God" line
+        import re
+        person1_real = "Unknown Person1"
+        person2_real = "Unknown Person2"
+        for msg in conversation_steps:
+            if getattr(msg, "source", "") == "God":
+                line = getattr(msg, "content", "")
+                match = re.search(r"let (.*?) and (.*?) converse about", line)
+                if match:
+                    person1_real = match.group(1).strip()
+                    person2_real = match.group(2).strip()
+                break
+
+        # 2) Now process each step, applying the name_map for .source
+        #    and using PERSON_AVATARS for Arguer1/Arguer2.
         for i, step in enumerate(conversation_steps):
-            # We'll read .source to get the speaker
             content = getattr(step, "content", "")
-            agent_source = getattr(step, "source", "")
+            source_val = getattr(step, "source", "")
 
             # Debug: Print the source and content
-            st.write(f"DEBUG: Agent: {agent_source}, Content: {content}")
+            st.write(f"DEBUG: Agent: {source_val}, Content: {content}")
 
             if not content.strip():
-                continue  # Skip empty messages
+                continue  # skip empty
 
-            # Map .source to a known role if necessary
-            mapped_name = name_map.get(agent_source, agent_source)
-            avatar_url = AVATAR_URLS.get(mapped_name, AVATAR_URLS["fallback"])
+            # Map .source to a known role if needed
+            mapped_name = name_map.get(source_val, source_val)
 
-            # Display bubble
+            # 3) If Arguer1 => look up person1_real in PERSON_AVATARS
+            #    If not found, fallback to "Arguer1" from AVATAR_URLS
+            if mapped_name == "Arguer1":
+                avatar_url = PERSON_AVATARS.get(person1_real, AVATAR_URLS["Arguer1"])
+            elif mapped_name == "Arguer2":
+                avatar_url = PERSON_AVATARS.get(person2_real, AVATAR_URLS["Arguer2"])
+            else:
+                # e.g. God, Host, Judge, user, fallback
+                avatar_url = AVATAR_URLS.get(mapped_name, AVATAR_URLS["fallback"])
+
             display_avatar_and_text(avatar_url, content, i)
 
     st.write("---")
+
+
+if __name__ == "__main__":
+    main()
+
 
 
 if __name__ == "__main__":
