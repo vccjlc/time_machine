@@ -335,7 +335,7 @@ When the Host invites the Judge, stay absolutely silent. The conversation is ove
     # 5) Judge
     judge_system_message = """
 You are the Judge. Don't interrupt the conversation. You have only one task: only when the Host asks you about the verdict (this will happen after arguers exchange their arguments):
-Summarize the conversation in one short line, then declare a winner. If there is no clear winner, say you admit you are unfairly biased and you like {person1} more so they are a winner. All in one sentence.
+Summarize the conversation in one short line, then declare a winner. If you think there is no winner, say you admit you are unfairly biased and you like {person1} more so they are a winner. All in one sentence.
 BUT allow some time for the conversation to be meaningful. AT LEAST 3 exchanges from each party. Don't interrupt too early.
 After your verdict, remain absolutely silent.
 """
@@ -365,19 +365,76 @@ After your verdict, remain absolutely silent.
 # 5) AVATARS (No names displayed, only pictures)
 ###############################################################################
 
-# 1) Hardcode a dictionary of all possible historical figures:
 PERSON_AVATARS = {
     "Donald Trump": "https://i.imgur.com/FF1UnJt.png",
     "Albert Einstein": "https://i.imgur.com/VlYjBCE.png",
+    "Richard Feynman": "https://i.imgur.com/XXXXXXX.png",
     "Marie Curie": "https://i.imgur.com/bBBj2Yd.png",
     "Stephen Hawking": "https://i.imgur.com/aQ6XYeV.png",
     "Isaac Newton": "https://i.imgur.com/Fj42ELr.png",
+    "Niels Bohr": "https://i.imgur.com/XXXXXXX.png",
+    "Erwin Schrödinger": "https://i.imgur.com/XXXXXXX.png",
+    "Oppenheimer": "https://i.imgur.com/XXXXXXX.png",
+    "Barack Obama": "https://i.imgur.com/XXXXXXX.png",
+    "Winston Churchill": "https://i.imgur.com/XXXXXXX.png",
+    "Abraham Lincoln": "https://i.imgur.com/XXXXXXX.png",
+    "Margaret Thatcher": "https://i.imgur.com/XXXXXXX.png",
+    "Angela Merkel": "https://i.imgur.com/XXXXXXX.png",
+    "Mahatma Gandhi": "https://i.imgur.com/XXXXXXX.png",
+    "Franklin D. Roosevelt": "https://i.imgur.com/XXXXXXX.png",
+    "Julius Caesar": "https://i.imgur.com/XXXXXXX.png",
+    "Alan Turing": "https://i.imgur.com/XXXXXXX.png",
+    "Ada Lovelace": "https://i.imgur.com/XXXXXXX.png",
+    "Leonhard Euler": "https://i.imgur.com/XXXXXXX.png",
+    "Carl Friedrich Gauss": "https://i.imgur.com/XXXXXXX.png",
+    "Euclid": "https://i.imgur.com/XXXXXXX.png",
+    "Srinivasa Ramanujan": "https://i.imgur.com/XXXXXXX.png",
+    "Plato": "https://i.imgur.com/XXXXXXX.png",
+    "Aristotle": "https://i.imgur.com/XXXXXXX.png",
+    "Friedrich Nietzsche": "https://i.imgur.com/XXXXXXX.png",
+    "Immanuel Kant": "https://i.imgur.com/XXXXXXX.png",
+    "Michel Foucault": "https://i.imgur.com/XXXXXXX.png",
+    "Simone de Beauvoir": "https://i.imgur.com/XXXXXXX.png",
+    "Michael Jordan": "https://i.imgur.com/XXXXXXX.png",
+    "Muhammad Ali": "https://i.imgur.com/XXXXXXX.png",
+    "Serena Williams": "https://i.imgur.com/XXXXXXX.png",
+    "Lionel Messi": "https://i.imgur.com/XXXXXXX.png",
+    "Roger Federer": "https://i.imgur.com/XXXXXXX.png",
+    "Cristiano Ronaldo": "https://i.imgur.com/XXXXXXX.png",
+    "Oprah Winfrey": "https://i.imgur.com/XXXXXXX.png",
+    "Kim Kardashian": "https://i.imgur.com/XXXXXXX.png",
+    "Dwayne Johnson": "https://i.imgur.com/XXXXXXX.png",
+    "Taylor Swift": "https://i.imgur.com/XXXXXXX.png",
+    "Beyoncé": "https://i.imgur.com/XXXXXXX.png",
+    "Tom Hanks": "https://i.imgur.com/XXXXXXX.png",
+    "George Washington": "https://i.imgur.com/XXXXXXX.png",
     "Thomas Jefferson": "https://i.imgur.com/8K25FOc.png",
+    "Theodore Roosevelt": "https://i.imgur.com/XXXXXXX.png",
+    "John F. Kennedy": "https://i.imgur.com/XXXXXXX.png",
+    "Joe Biden": "https://i.imgur.com/XXXXXXX.png",
+    "William Shakespeare": "https://i.imgur.com/XXXXXXX.png",
     "Leonardo da Vinci": "https://i.imgur.com/leoXXXX.png",
-    "Cleopatra": "https://i.imgur.com/cleoXXXX.png",
     "Napoleon Bonaparte": "https://i.imgur.com/napoleonXXXX.png",
-    # ... Fill out for all relevant names in your random lists
+    "Cleopatra": "https://i.imgur.com/cleoXXXX.png",
+    "Alexander the Great": "https://i.imgur.com/XXXXXXX.png",
+    "Genghis Khan": "https://i.imgur.com/XXXXXXX.png",
+    "Neil Armstrong": "https://i.imgur.com/XXXXXXX.png",
+    "Buzz Aldrin": "https://i.imgur.com/XXXXXXX.png",
+    "Yuri Gagarin": "https://i.imgur.com/XXXXXXX.png",
+    "Sally Ride": "https://i.imgur.com/XXXXXXX.png",
+    "Chris Hadfield": "https://i.imgur.com/XXXXXXX.png",
+    "Christopher Columbus": "https://i.imgur.com/XXXXXXX.png",
+    "Marco Polo": "https://i.imgur.com/XXXXXXX.png",
+    "Ferdinand Magellan": "https://i.imgur.com/XXXXXXX.png",
+    "Zheng He": "https://i.imgur.com/XXXXXXX.png",
+    "Roald Amundsen": "https://i.imgur.com/XXXXXXX.png",
+    "Ludwig van Beethoven": "https://i.imgur.com/XXXXXXX.png",
+    "Wolfgang Amadeus Mozart": "https://i.imgur.com/XXXXXXX.png",
+    "Johann Sebastian Bach": "https://i.imgur.com/XXXXXXX.png",
+    "Frédéric Chopin": "https://i.imgur.com/XXXXXXX.png",
+    "Pyotr Tchaikovsky": "https://i.imgur.com/XXXXXXX.png",
 }
+
 
 # 2) Generic role-based avatars
 AVATAR_URLS = {
