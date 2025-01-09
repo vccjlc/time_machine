@@ -330,7 +330,7 @@ After your verdict, remain absolutely silent.
 """
     judge_agent = AssistantAgent(
         name="Judge",
-        description="Gives a short verdict, then silent.",
+        description="Is silent. Gives a short verdict at the end of the conversation, then again silent.",
         system_message=judge_system_message,
         model_client=model_client,
         tools=[]
