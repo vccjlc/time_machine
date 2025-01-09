@@ -22,7 +22,7 @@ The conversation begins with the initiator agent invoking God, who selects the t
 ### Principles
 - Simplicity
 - Different conversation flavors and topics selected randomly together with arguers
-- Short conversations
+- Short debates
 
 ## How to Use
 
