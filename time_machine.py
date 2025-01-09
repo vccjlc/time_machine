@@ -232,7 +232,7 @@ async def run_famous_people_contest():
     model_client = OpenAIChatCompletionClient(
         api_key=st.secrets["openai"]["OPENAI_API_KEY"],
         model="gpt-4o",
-        temperature=0.8
+        temperature=0.7
     )
 
     person1, person2 = pick_two_people()
@@ -265,7 +265,7 @@ Your tasks:
 3) Thank God saying "Thanks, God!". Then very briefly introduce {person1} (just this: born-died year, who they are) and {person2} (just this: born-died year, who they are) and mention the subtopic.
 4) Prompt {person1} and {person2} to speak about the subtopic in a few lines each. Remind everyone that the conversation should be {style}. Start just with "{person1}, your turn."
 5) You can ask one or two questions per conversation to keep the conversation going.
-7) Allow for a meaningful exchange. At least 4 parts from each arguer, up to 7, no more.
+7) Allow for a meaningful exchange. At least 5 parts from each arguer, up to 8, no more.
 6) Invite the Judge in one short line to give a verdict
 7) After the Judge speaks, just say: "Thank you everyone!"
 Don't let the Judge speak earlier. Do not produce "Thank you everyone!" until after the Judge's verdict. Say "Thank you everyone!" only once. It marks the end of the conversation.
