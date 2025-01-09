@@ -9,7 +9,7 @@ import streamlit as st
 
 from autogen_ext.models.openai import OpenAIChatCompletionClient
 from autogen_agentchat.agents import AssistantAgent
-from autogen_agentchat.teams import SelectorGroupChat
+from autogen_agentchat.teams import SelectorGroupChat<img src="{
 from autogen_agentchat.conditions import TextMentionTermination
 
 ###############################################################################
@@ -473,8 +473,8 @@ def display_avatar_and_text(avatar_url: str, content: str, index: int):
             box-shadow: 0 1px 3px rgba(0,0,0,0.2);
         ">
             <img src="{avatar_url}" style="
-                width:40px;
-                height:40px;
+                width:50px;
+                height:50px;
                 border-radius:20px;
                 margin-right:10px;
             " />
