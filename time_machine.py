@@ -494,7 +494,7 @@ async def get_contest_messages():
     Runs the multi-agent conversation from run_famous_people_contest,
     returning all message steps.
     """
-    with st.spinner("_Agents are talking. The conversation begins with the initiator agent invoking God, who selects the topic and participants. A Host then clarifies the topic, introduces the two participants, and prompts them to present their arguments. Finally, a Judge evaluates the discussion and declares the winner of the short debate._"):
+    with st.spinner("_Agents are talking. The conversation begins with the initiator agent invoking God, who selects the topic and participants. A Host then clarifies the topic, introduces the two participants, and prompts them to present their arguments. Finally, a (biased) Judge evaluates the discussion and declares the winner of the short debate._"):
         msgs = []
         async for m in run_famous_people_contest():
             msgs.append(m)
