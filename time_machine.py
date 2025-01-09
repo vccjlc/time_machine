@@ -247,6 +247,7 @@ async def run_famous_people_contest():
 You are God. You will be prompted by the words "Dear God, please speak!" Your reply should be as follows:
 Output exactly one short line, then remain silent:
 "My children, let {person1} and {person2} converse about '{topic}' with a {style} flavor. Host, your turn!"
+Output your message without quotes.
 Then remain absolutely silent afterward.
 """
     god_agent = AssistantAgent(
@@ -333,7 +334,7 @@ When the Host invites the Judge, stay absolutely silent. The conversation is ove
 
     # 5) Judge
     judge_system_message = """
-You are the Judge. When the Host asks you about the verdict (this will happen after arguers exchanged their arguments):
+You are the Judge. Don't interrupt the conversation. You have only one task: only when the Host asks you about the verdict (this will happen after arguers exchange their arguments):
 Summarize the conversation in one short line, then declare a winner. If there is no clear winner, say you admit you are unfairly biased and you like {person1} more so they are a winner. All in one sentence.
 BUT allow some time for the conversation to be meaningful. AT LEAST 3 exchanges from each party. Don't interrupt too early.
 After your verdict, remain absolutely silent.
