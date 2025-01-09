@@ -244,7 +244,7 @@ async def run_famous_people_contest():
 
     # 1) God
     god_system_message = f"""
-You are God.
+You are God. You will be prompted by the words "Dear God, please speak!" Your reply should be as follows:
 Output exactly one short line, then remain silent:
 "My children, let {person1} and {person2} converse about '{topic}' with a {style} flavor. Host, your turn!"
 Then remain absolutely silent afterward.
@@ -367,11 +367,11 @@ After your verdict, remain absolutely silent.
 # 1) Hardcode a dictionary of all possible historical figures:
 PERSON_AVATARS = {
     "Donald Trump": "https://i.imgur.com/FF1UnJt.png",
-    "Albert Einstein": "https://i.imgur.com/einsteinXXXX.png",
-    "Marie Curie": "https://i.imgur.com/marieXXXX.png",
-    "Stephen Hawking": "https://i.imgur.com/hawkingXXXX.png",
-    "Isaac Newton": "https://i.imgur.com/newtonXXXX.png",
-    "Thomas Jefferson": "https://i.imgur.com/tjeffXXXX.png",
+    "Albert Einstein": "https://i.imgur.com/VlYjBCE.png",
+    "Marie Curie": "https://i.imgur.com/bBBj2Yd.png",
+    "Stephen Hawking": "https://i.imgur.com/aQ6XYeV.png",
+    "Isaac Newton": "https://i.imgur.com/Fj42ELr.png",
+    "Thomas Jefferson": "https://i.imgur.com/8K25FOc.png",
     "Leonardo da Vinci": "https://i.imgur.com/leoXXXX.png",
     "Cleopatra": "https://i.imgur.com/cleoXXXX.png",
     "Napoleon Bonaparte": "https://i.imgur.com/napoleonXXXX.png",
@@ -381,7 +381,7 @@ PERSON_AVATARS = {
 # 2) Generic role-based avatars
 AVATAR_URLS = {
     "God": "https://i.imgur.com/wyw9Hrf.png",
-    "Host": "https://i.imgur.com/Bgy4LxS.png",
+    "Host": "https://i.imgur.com/9N3khIw.png",
     "Arguer1": "https://i.imgur.com/WxgZfQC.png",
     "Arguer2": "https://i.imgur.com/sqPjzaI.png",
     "Judge": "https://i.imgur.com/kj6uFlA.png",
