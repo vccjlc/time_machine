@@ -12,12 +12,12 @@ Enjoy the timeless conversations!
 
 The topics range from fun facts and philosophical debates to hypothetical "would-you-rather" questions. The dialogue is styled to reflect the personalities of the chosen figures, making every encounter as entertaining as it is insightful.
 
-The conversation starts with a mysterious user summoning God, who chooses the topic and participants. A Host facilitates the discussion, guiding the Arguers (two participants) as they present their arguments, while a Judge delivers the verdict, declaring the winner of the short debate.
+The conversation starts with a mysterious user summoning God, who chooses the topic and participants. A Host clarifies the topic, introduces two participants, and facilitates the discussion, guiding the arguers to present their arguments, while a Judge delivers the verdict, declaring the winner of the short debate.
 
 ### Highlights:
 - **Dynamic Avatars**: Each character is represented with a distinct avatar for a visually engaging experience.
 - **Over 2,211 Possible Encounters**: With 67 famous figures, there are 2211 unique combinations of participants, ensuring endless variety.
-- **Exciting Topics**: From paradoxes to conspiracy theories, no two conversations are alike.
+- **Topics**: From paradoxes to conspiracy theories, no two conversations are alike.
 
 ## How to Use
 
