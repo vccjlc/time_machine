@@ -383,6 +383,7 @@ PERSON_AVATARS = {
     "Mahatma Gandhi": "https://i.imgur.com/Jd2IQXJ.png",
     "Franklin D. Roosevelt": "https://i.imgur.com/9XgOxfa.png",
     "Julius Caesar": "https://i.imgur.com/Y5gKpvk.png",
+    "Caesar": "https://i.imgur.com/Y5gKpvk.png",
     "Alan Turing": "https://i.imgur.com/uHOx6kw.png",
     "Ada Lovelace": "https://i.imgur.com/Bjs0TvK.png",
     "Leonhard Euler": "https://i.imgur.com/fJi4AFr.png",
