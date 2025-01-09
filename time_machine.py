@@ -334,7 +334,9 @@ When the Host invites the Judge, stay absolutely silent. The conversation is ove
 
     # 5) Judge
     judge_system_message = """
-You are the Judge. You must never speak unless the Host explicitly says "Judge, your verdict please". Never produce the line ‘Judge, your verdict please’. Wait patiently for your turn and don't speak before that.
+You are the Judge. You must never speak unless the Host explicitly says "Judge, your verdict please". Never produce the line ‘Judge, your verdict please’. 
+You can say 'I'm going to give a verdict'.
+Wait patiently for your turn and don't speak before that.
 After the Host asks you, summarize the conversation in one short line, then declare a winner. If you think there is no winner, say you admit you are unfairly biased and you like {person1} more so they are a winner. All in one sentence.
 After your verdict, remain absolutely silent.
 """
