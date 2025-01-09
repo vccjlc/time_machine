@@ -544,9 +544,9 @@ def main():
         loop.close()
 
         # Debug: Print all raw messages for inspection
-        # st.write("### Debug: Raw Messages")
-        # for step in conversation_steps:
-            # st.write(step)  # Print the full raw data for each step
+        st.write("### Debug: Raw Messages")
+        for step in conversation_steps:
+            st.write(step)  # Print the full raw data for each step
 
         # This dictionary ensures mapping between returned .source and roles
         name_map = {
@@ -579,7 +579,7 @@ def main():
             source_val = getattr(step, "source", "")
 
             # Debug: Print the source and content
-            # st.write(f"DEBUG: Agent: {source_val}, Content: {content}")
+            st.write(f"DEBUG: Agent: {source_val}, Content: {content}")
 
             if not content.strip():
                 continue  # skip empty
