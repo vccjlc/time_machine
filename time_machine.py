@@ -213,7 +213,7 @@ def decide_style() -> str:
     val = random.random()
     if val < 0.5:
         return "witty"
-    elif val < 0.75:
+    elif val < 0.7:
         return "serious"
     else:
         return "moderate"
@@ -232,7 +232,7 @@ async def run_famous_people_contest():
     model_client = OpenAIChatCompletionClient(
         api_key=st.secrets["openai"]["OPENAI_API_KEY"],
         model="gpt-4o",
-        temperature=0.6
+        temperature=0.8
     )
 
     person1, person2 = pick_two_people()
