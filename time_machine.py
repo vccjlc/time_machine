@@ -370,8 +370,8 @@ AVATAR_URLS = {
     "Host": "https://i.imgur.com/Bgy4LxS.png",
     "Arguer1": "https://i.imgur.com/WxgZfQC.png",
     "Arguer2": "https://i.imgur.com/sqPjzaI.png",
-    "Judge": "https://i.imgur.com/LfPuI2Q.png",
-    "user": "https://i.imgur.com/abLj6k4.png",
+    "Judge": "https://i.imgur.com/Vo7xmzv.pngt",
+    "user": "https://i.imgur.com/SHkjKdN.png",
     "fallback": "https://i.imgur.com/wyw9Hrf.png",
 }
 
