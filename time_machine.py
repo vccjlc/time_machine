@@ -211,10 +211,12 @@ def pick_random_topic() -> str:
 
 def decide_style() -> str:
     val = random.random()
-    if val < 0.5:
+    if val < 0.4:
         return "witty"
-    elif val < 0.7:
+    elif val < 0.6:
         return "serious"
+    elif val < 0.85:
+        return "competitive"
     else:
         return "moderate"
 
