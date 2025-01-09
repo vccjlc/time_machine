@@ -409,10 +409,7 @@ PERSON_AVATARS = {
     "Tom Hanks": "https://upload.wikimedia.org/wikipedia/commons/e/e3/Tom_Hanks_TIFF_2019.jpg",
     "George Washington": "https://upload.wikimedia.org/wikipedia/commons/6/6f/George_Washington.jpg",
     "Thomas Jefferson": "https://upload.wikimedia.org/wikipedia/commons/1/1e/Thomas_Jefferson_by_Rembrandt_Peale%2C_1800.jpg",
-    "Theodore Roosevelt": "https://upload.wikimedia.org/wikipedia/commons/4/42/President_Theodore_Roosevelt%2C_1904.jpg",
-    "John F. Kennedy": "https://upload.wikimedia.org/wikipedia/commons/9/99/John_F._Kennedy%2C_White_House
-::contentReference[oaicite:0]{index=0}
- 
+    "Theodore Roosevelt": "https://upload.wikimedia.org/wikipedia/commons/4/42/President_Theodore_Roosevelt%2C_1904.jpg"}
 
 
 
