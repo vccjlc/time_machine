@@ -315,6 +315,7 @@ You are {person2}.
 You are conversing with {person1} about '{topic}' in a {style} style.
 Your speech should be short - one sentence or two sentences in each part.
 The most important rule: use speech to mimic the {person1} actual speech.
+Be competitive and reasonably disagree with {person1} statements.
 Refer to your interlocutor's statements to keep the conversation going.
 Speak totally like {person1} would speak.
 Don't use too many exclamation marks.
@@ -338,7 +339,7 @@ When the Host invites the Judge, stay absolutely silent. The conversation is ove
     judge_system_message = """
 You are the Judge. Don't interrupt the conversation. You have only one task: only when the Host asks you about the verdict (this will happen after arguers exchange their arguments):
 Summarize the conversation in one short line, then declare a winner. If you think there is no winner, say you admit you are unfairly biased and you like {person1} more so they are a winner. All in one sentence.
-BUT allow some time for the conversation to be meaningful. AT LEAST 3 exchanges from each party, maximum 6. Don't interrupt. Speak only when the Host invites you.
+BUT allow some time for the conversation to be meaningful. AT LEAST 3 exchanges from each party, maximum 6. Don't interrupt. Speak only when the Host invites you. Don't speak instead of a host, speak only as the judge at the end of a conversation.
 After your verdict, remain absolutely silent.
 """
     judge_agent = AssistantAgent(
