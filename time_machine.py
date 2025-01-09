@@ -267,7 +267,7 @@ Your tasks:
 4) Prompt {person1} and {person2} to speak about the subtopic in a few lines each. Remind everyone that the conversation should be {style}. Start just with "{person1}, your turn."
 5) When you see the conversation could be concluded, when the conversation reaches some conclusion naturally, invite the Judge with just: "Judge, your verdict please.". But allow some time for the conversation to be meaningful. AT LEAST 3 exchanges from each party.
 6) After the Judge speaks, just say: "Thank you everyone!"
-Do not produce "Thank you everyone!" until after the Judge's verdict.
+Do not produce "Thank you everyone!" until after the Judge's verdict. Say "Thank you everyone!" only once. It marks the end of the conversation.
 Then the conversation is over. Stay silent.
 Stay succinct.
 If one {person1} or {person2} is Donald Trump, remember he is the current US president. If both are Donald Trump, make some funny remark that's it's not a bug but God's humor.
@@ -334,7 +334,7 @@ When the Host invites the Judge, stay absolutely silent. The conversation is ove
     # 5) Judge
     judge_system_message = """
 You are the Judge. When the Host asks you about the verdict (this will happen after arguers exchanged their arguments):
-Summarize the conversation in one short line, then declare a winner. If there is no clear winner, say you are biased and you like {person1} more so they are a winner. All in one sentence.
+Summarize the conversation in one short line, then declare a winner. If there is no clear winner, say you admit you are unfairly biased and you like {person1} more so they are a winner. All in one sentence.
 BUT allow some time for the conversation to be meaningful. AT LEAST 3 exchanges from each party. Don't interrupt too early.
 After your verdict, remain absolutely silent.
 """
