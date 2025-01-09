@@ -234,7 +234,7 @@ async def run_famous_people_contest():
     model_client = OpenAIChatCompletionClient(
         api_key=st.secrets["openai"]["OPENAI_API_KEY"],
         model="gpt-4o",
-        temperature=1
+        temperature=0.7
     )
 
     person1, person2 = pick_two_people()
