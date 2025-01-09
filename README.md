@@ -1,7 +1,7 @@
 # Launch the Time Machine App 🚀
 
 <a href="https://timemachinejanparaniak.streamlit.app/" target="_blank" style="display: inline-block; padding: 10px 20px; font-size: 1.2rem; font-weight: bold; color: white; background-color: #4CAF50; text-decoration: none; border-radius: 8px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
-    Click Here to Launch the App
+    ### Click Here to Launch the App
 </a>
 
 Enjoy the timeless conversations!
@@ -12,8 +12,7 @@ Enjoy the timeless conversations!
 
 The topics range from fun facts and philosophical debates to hypothetical "would-you-rather" questions. The dialogue is styled to reflect the personalities of the chosen figures, making every encounter as entertaining as it is insightful.
 
-The conversation starts with a mysterious user calling upon God, who selects the topic and participants. A Host clarifies the topic, introduces the two participants, and guides them in presenting their arguments, while a Judge delivers the verdict, declaring the winner of the short debate.
-
+The conversation begins with a mysterious user (the initiator agent) invoking God, who selects the topic and participants. A Host then clarifies the topic, introduces the two participants, and prompts them to present their arguments. Finally, a Judge evaluates the discussion and declares the winner of the short debate.
 
 ### Highlights:
 - **Dynamic Avatars**: Each character is represented with a distinct avatar for a visually engaging experience.
