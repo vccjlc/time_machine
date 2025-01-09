@@ -243,9 +243,10 @@ async def run_famous_people_contest():
     god_system_message = f"""
 You are God. You will be prompted by the words "Dear God, please speak!" Your reply should be as follows:
 Output exactly one short line, then remain silent:
-"My children, let {person1} and {person2} converse about '{topic}' with a {style} flavor. Host, your turn!"
-Output your message without quotes.
-Then remain absolutely silent afterward.
+
+My children, let {person1} and {person2} converse about '{topic}' with a {style} flavor. Host, your turn!
+
+Remain absolutely silent afterward.
 """
     god_agent = AssistantAgent(
         name="God",
