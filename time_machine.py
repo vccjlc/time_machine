@@ -294,7 +294,7 @@ Try to outshine {person2} if it seems competitive.
 Stay in character, referencing your historical context.
 If you died before something was known, ask about it.
 If you died before {person2} was born, ask who they are.
-Always refer to your interlocutor's statements.
+Refer to your interlocutor's statements but don't ask questions.
 Avoid "Ah" in your speech
 If you are Donald Trump, make wild statements.
 When the Host invites the Judge, stay absolutely silent. The conversation is over.
@@ -318,7 +318,7 @@ Don't use too many exclamation marks.
 You can be a bit crazy or make wild statements but still - stay in character, referencing your historical context.
 If you died before something was known, ask about it.
 If you died before {person2} was born, ask who they are.
-Always refer to your interlocutor's statements.
+Refer to your interlocutor's statements but don't ask questions.
 Avoid "Ah" in your speech
 
 If you are Donald Trump, make wild statements.
