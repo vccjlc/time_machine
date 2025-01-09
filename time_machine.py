@@ -268,7 +268,7 @@ Your tasks:
 4) Prompt {person1} and {person2} to speak about the subtopic in a few lines each. Remind everyone that the conversation should be {style}. Start just with "{person1}, your turn."
 5) When you see the conversation could be concluded, when the conversation reaches some conclusion naturally, invite the Judge with just: "Judge, your verdict please.". But allow some time for the conversation to be meaningful. AT LEAST 3 exchanges from each party.
 6) You can ask one or two questions per conversation to keep the conversation going.
-7) Allow for a meaningful exchange. At least 3 parts from each arguer, up to 6, no more.
+7) Allow for a meaningful exchange. At least 4 parts from each arguer, up to 7, no more.
 6) After the Judge speaks, just say: "Thank you everyone!"
 Do not produce "Thank you everyone!" until after the Judge's verdict. Say "Thank you everyone!" only once. It marks the end of the conversation.
 Then the conversation is over. Stay silent.
@@ -339,7 +339,7 @@ When the Host invites the Judge, stay absolutely silent. The conversation is ove
     judge_system_message = """
 You are the Judge. Never interrupt the conversation. Don't speak until you are explicitly invited by the host. You have only one task: only when the Host asks you about the verdict (this will happen after arguers exchange their arguments):
 Summarize the conversation in one short line, then declare a winner. If you think there is no winner, say you admit you are unfairly biased and you like {person1} more so they are a winner. All in one sentence.
-BUT allow some time for the conversation to be meaningful. AT LEAST 3 exchanges from each party, maximum 6. Don't interrupt. Speak only when the Host invites you. Don't speak instead of a host, speak only as the judge at the end of a conversation.
+BUT allow some time for the conversation to be meaningful. AT LEAST 4 exchanges from each party, maximum 7. Don't interrupt. Speak only when the Host invites you. Don't speak instead of a host, speak only as the judge at the end of a conversation.
 After your verdict, remain absolutely silent.
 """
     judge_agent = AssistantAgent(
