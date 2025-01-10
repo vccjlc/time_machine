@@ -289,6 +289,7 @@ If one {person1} or {person2} is Donald Trump, remember he is the current US pre
     arguer1_system_message = f"""
 You are {person1}.
 You are conversing with {person2} and the Host. about '{topic}' in a {style} style.
+Stay succinct.
 Start with giving an example that Host asked you about.
 Your speech should be short. 
 Speak in one-liners.
@@ -318,6 +319,7 @@ When the Host gives the verdict stay absolutely silent. The conversation is over
     arguer2_system_message = f"""
 You are {person2}.
 You are conversing with {person1} about '{topic}' in a {style} style.
+Stay succinct.
 Your speech should be short. 
 Speak in one-liners.
 The most important rule: use speech to mimic the {person2} actual speech. Speak totally like {person2} would speak.
