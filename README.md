@@ -18,7 +18,8 @@ The conversation begins with the initiator agent invoking God, who selects the t
 - **Dynamic Avatars**: Each character is represented with a distinct avatar for a visually engaging experience.
 - **Over 2,211 Possible Encounters**: With 67 famous figures, there are 2211 unique combinations of participants, ensuring endless variety.
 - **Topics**: From paradoxes to conspiracy theories, no two conversations are alike.
-- **Conversation Flavor**: God decides the tone—witty, serious, competitive, or moderate—keeping each interaction unique. 
+- **Conversation Flavor**: God decides the tone—witty, serious, competitive, or moderate—keeping each interaction unique.
+- ** Endless Variety**: With 67 participants, 43 topics and 4 conversation flavors, the app offers 380,292 unique possibilities.
 
 ### Design Principles
 - Simplicity
