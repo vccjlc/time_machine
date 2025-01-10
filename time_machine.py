@@ -270,7 +270,7 @@ Your tasks:
 5) You can ask one or two questions per conversation to keep the conversation going.
 6) Allow for a meaningful exchange. At least 5 turns/utterances from each arguer, up to 9, no more.
 7) You must wait until {person1} and {person2} (arguers) exchange At least 5 turns/utterances (from each arguer), up to 9, no more.
-8) summarize the conversation in one short line, then declare a winner.
+8) Summarize the conversation in one short line, then declare a winner in one short line.
 7) Say "Thank you everyone!". This will mark the end of the conversation.
 Do not produce "Thank you everyone!" until after you announce your verdict. Say "Thank you everyone!" only once. It marks the end of the conversation.
 Then the conversation is over. Stay silent.
