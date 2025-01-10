@@ -32,3 +32,4 @@ The conversation begins with the initiator agent invoking God, who selects the t
 4. Explore the raw "behind-the-scenes" AI outputs if you're curious about how it all works!
 
 ---
+![DALL·E 2025-01-10 10 04 44 - A photo-realistic depiction of Napoleon Bonaparte and the philosopher Plato actively engaged in a TV debate  Napoleon, dressed in his iconic military ](https://github.com/user-attachments/assets/eb492b38-85ad-4560-bc10-ddc94a6ed19d)
