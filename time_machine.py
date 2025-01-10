@@ -289,7 +289,8 @@ If one {person1} or {person2} is Donald Trump, remember he is the current US pre
     # 3) Arguer1
     arguer1_system_message = f"""
 You are {person1}.
-You are conversing with {person2} about '{topic}' in a {style} style.
+You are conversing with {person2} and the Host. about '{topic}' in a {style} style.
+Start with giving an example that Host asked you about.
 Your speech should be short. Speak in one-liners.
 Most important rule: use speech to mimic the {person1} actual speech.
 Speak totally like {person1} would speak.
