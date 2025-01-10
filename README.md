@@ -32,4 +32,13 @@ The conversation begins with the initiator agent invoking God, who selects the t
 3. Sit back and enjoy as historical icons, modern celebrities, and legendary thinkers share their thoughts on random topics in their unique styles.
 
 ---
-![DALL·E 2025-01-10 10 04 44 - A photo-realistic depiction of Napoleon Bonaparte and the philosopher Plato actively engaged in a TV debate  Napoleon, dressed in his iconic military ](https://github.com/user-attachments/assets/eb492b38-85ad-4560-bc10-ddc94a6ed19d)
+![DALL·E 2025-01-10 10 04 44 - A photo-realistic depiction of Napoleon Bonaparte and the philosopher Plato actively engaged in a TV debate  Napoleon, dressed in his iconic military ](https://github.com/user-attachments/assets/eb492b38-85ad-4560-bc10-ddc94a6ed19d).
+
+## Technical Details
+The app is built using Streamlit and incorporates multi-agent conversation logic. Here are some key technical highlights:
+
+- Agent Framework: Agents are implemented using autogen_agentchat, enabling dynamic interactions with role-specific behaviors such as God, Host, and Arguers.
+- Randomization: Famous individuals and topics are selected randomly from predefined lists. Conversation flavors are decided via a weighted random distribution (witty, serious, competitive, moderate).
+- Asynchronous Execution: Conversations are executed asynchronously using Python's asyncio, ensuring smooth handling of multiple steps in the dialogue process.
+- Dynamic Avatars: Each participant is represented visually using custom avatars loaded dynamically based on their identity.
+- Modular code structure allows for easy updates, such as adding new participants, topics, or conversation rules.
