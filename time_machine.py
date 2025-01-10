@@ -227,9 +227,8 @@ async def run_famous_people_contest():
     """
     We are going to have a short conversation between:
       - God (one-line)
-      - Host (introduces two famous people & calls Judge)
+      - Host (introduces two famous people & give a short verdict)
       - Two arguers
-      - A Judge (one-line verdict)
     """
     model_client = OpenAIChatCompletionClient(
         api_key=st.secrets["openai"]["OPENAI_API_KEY"],
@@ -260,17 +259,18 @@ Remain absolutely silent afterward.
 
     # 2) Host
     host_system_message = f"""
-You are the Host.
+You are the conversation Host.
 Your tasks:
 1) Wait for the God to speak. God will introduce guests and the topic, and say "Host, your turn!". It means it's your time to speak.
-2) Choose a subtopic of {topic}. It can be something specific. For example, if the topic is "riddles", you must give a riddle. If the topic is "would you rather", you must pose a specific "would you rather" question. But you can also let them converse about the topic in general, for example if the topic is 'debating for a presidential seat', let them debate.
-3) Thank God saying "Thanks, God!". Then very briefly introduce {person1} (just this: born-died year, who they are) and {person2} (just this: born-died year, who they are) and mention the subtopic.
-4) Prompt {person1} and {person2} to speak about the subtopic in a few lines each. Remind everyone that the conversation should be {style}. Start just with "{person1}, your turn."
+2) Choose a subtopic of {topic}. It should be something specific, interesting or controversial. For example, if the topic is "riddles", you must give a riddle. If the topic is "would you rather", you must pose a specific "would you rather" question. But you can also let them converse about the topic in general, for example if the topic is 'debating for a presidential seat', let them pretend thy are debating.
+3) Thank God saying "Thanks, God!". Then very briefly introduce {person1} (just this: born-died year, who they are) and {person2} (just this: born-died year, who they are) and mention the topic or subtopic you've invented.
+4) Prompt {person1} and {person2} to speak about the subtopic. Remind everyone that the conversation should be {style}. Start just with "{person1}, your turn."
 5) You can ask one or two questions per conversation to keep the conversation going.
-7) Allow for a meaningful exchange. At least 5 parts from each arguer, up to 8, no more.
-6) Invite the Judge in one short line to give a verdict
-7) After the Judge speaks, just say: "Thank you everyone!"
-Don't let the Judge speak earlier. Do not produce "Thank you everyone!" until after the Judge's verdict. Say "Thank you everyone!" only once. It marks the end of the conversation.
+6) Allow for a meaningful exchange. At least 5 parts from each arguer, up to 8, no more.
+7) You must wait until {person1} and {person2} (arguers) exchange at least 5 parts (from each arguer), up to 8, no more.
+8) summarize the conversation in one short line, then declare a winner. If you think there is no winner, say you admit you are unfairly biased and you like {person1} more so they are a winner. All in one sentence.
+7) Say "Thank you everyone!". This will mark the end of the conversation.
+Do not produce "Thank you everyone!" until after you announce your verdict. Say "Thank you everyone!" only once. It marks the end of the conversation.
 Then the conversation is over. Stay silent.
 Stay succinct.
 If one {person1} or {person2} is Donald Trump, remember he is the current US president.
@@ -332,24 +332,10 @@ When the Host invites the Judge, stay absolutely silent. The conversation is ove
         tools=[]
     )
 
-    # 5) Judge
-    judge_system_message = """
-You are the Judge. 
-Watch the conversation and wait patiently for your turn. You must wait until {person1} and {person2} (arguers) exchange at least 5 parts (from each arguer), up to 8, no more. a Host invites you, and don't speak before that.
-After the Host asks you, summarize the conversation in one short line, then declare a winner. If you think there is no winner, say you admit you are unfairly biased and you like {person1} more so they are a winner. All in one sentence.
-After your verdict, remain absolutely silent.
-"""
-    judge_agent = AssistantAgent(
-        name="Judge",
-        description="Is silent. Gives a short verdict at the end of the conversation, then again silent.",
-        system_message=judge_system_message,
-        model_client=model_client,
-        tools=[]
-    )
 
-    # 6) Termination after "Thank you everyone!"
+    # 5) Termination after "Thank you everyone!"
     termination_condition = TextMentionTermination("Thank you everyone!")
-    participants = [god_agent, host_agent, arguer1_agent, arguer2_agent, judge_agent]
+    participants = [god_agent, host_agent, arguer1_agent, arguer2_agent]
 
     chat = SelectorGroupChat(
         participants=participants,
@@ -444,7 +430,6 @@ AVATAR_URLS = {
     "Host": "https://i.imgur.com/BIoocTG.png",
     "Arguer1": "https://i.imgur.com/WxgZfQC.png",
     "Arguer2": "https://i.imgur.com/sqPjzaI.png",
-    "Judge": "https://i.imgur.com/kj6uFlA.png",
     "user": "https://i.imgur.com/SHkjKdN.png",
     "fallback": "https://i.imgur.com/wyw9Hrf.png",
 }
@@ -494,7 +479,7 @@ async def get_contest_messages():
     Runs the multi-agent conversation from run_famous_people_contest,
     returning all message steps.
     """
-    with st.spinner("_Agents are talking. The conversation begins with the initiator agent invoking God, who selects the topic and participants. A Host then clarifies the topic, introduces the two participants, and prompts them to present their arguments. Finally, a (biased) Judge evaluates the discussion and declares the winner of the short debate._"):
+    with st.spinner("_Agents are talking. The conversation begins with the initiator agent invoking God, who selects the topic and participants. A Host then clarifies the topic, introduces the two participants, and prompts them to present their arguments. Finally, a (biased) Host evaluates the discussion and declares the winner of the short debate._"):
         msgs = []
         async for m in run_famous_people_contest():
             msgs.append(m)
@@ -554,7 +539,6 @@ def main():
             "assistant": "Host",
             "assistant_1": "Arguer1",
             "assistant_2": "Arguer2",
-            "assistant_3": "Judge",
             "system": "God",
             "": "fallback",
         }
@@ -595,7 +579,7 @@ def main():
             elif mapped_name == "Arguer2":
                 avatar_url = PERSON_AVATARS.get(person2_real, AVATAR_URLS["Arguer2"])
             else:
-                # e.g. God, Host, Judge, user, fallback
+                # e.g. God, Host, user, fallback
                 avatar_url = AVATAR_URLS.get(mapped_name, AVATAR_URLS["fallback"])
 
             display_avatar_and_text(avatar_url, content, i)
