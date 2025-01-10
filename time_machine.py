@@ -362,7 +362,7 @@ PERSON_AVATARS = {
     "Albert Einstein": "https://i.imgur.com/VlYjBCE.png",
     "Richard Feynman": "https://i.imgur.com/pi6CkQ9.png",
     "Marie Curie": "https://i.imgur.com/bBBj2Yd.png",
-    "Stephen Hawking": "https://i.imgur.com/aQ6XYeV.png",
+    "Stephen Hawking": "https://i.imgur.com/UcsDCo2.png",
     "Isaac Newton": "https://i.imgur.com/Fj42ELr.png",
     "Niels Bohr": "https://i.imgur.com/XkG9MgM.png",
     "Erwin Schrödinger": "https://i.imgur.com/F6rVVko.png",
