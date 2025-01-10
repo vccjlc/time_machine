@@ -415,7 +415,7 @@ PERSON_AVATARS = {
     "Buzz Aldrin": "https://i.imgur.com/Y7xLrjJ.png",
     "Yuri Gagarin": "https://i.imgur.com/eN7rs5y.png",
     "Sally Ride": "https://i.imgur.com/46gNQ3J.png",
-    "Chris Hadfield": "https://i.imgur.com/q4Rn2sS.png",
+    "Chris Hadfield": "https://i.imgur.com/yhxuDci.png",
     "Christopher Columbus": "https://i.imgur.com/39G5x9d.png",
     "Marco Polo": "https://i.imgur.com/GU7IjkP.png",
     "Ferdinand Magellan": "https://i.imgur.com/8ByzARF.png",
