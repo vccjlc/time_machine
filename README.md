@@ -18,8 +18,9 @@ The conversation begins with the initiator agent invoking God, who selects the t
 - **Dynamic Avatars**: Each character is represented with a distinct avatar for a visually engaging experience.
 - **Over 2,211 Possible Encounters**: With 67 famous figures, there are 2211 unique combinations of participants, ensuring endless variety.
 - **Topics**: From paradoxes to conspiracy theories, no two conversations are alike.
+- **Conversation Flavor**: God decides the tone—witty, serious, competitive, or moderate—keeping each interaction unique. 
 
-### Principles
+### Design Principles
 - Simplicity
 - Different conversation flavors and topics selected randomly together with arguers
 - Short debates
@@ -29,7 +30,6 @@ The conversation begins with the initiator agent invoking God, who selects the t
 1. Visit the app at **[https://timemachinejanparaniak.streamlit.app/](https://timemachinejanparaniak.streamlit.app/)**.
 2. Press the **Run** button to initiate a new conversation.
 3. Sit back and enjoy as historical icons, modern celebrities, and legendary thinkers share their thoughts on random topics in their unique styles.
-4. Explore the raw "behind-the-scenes" AI outputs if you're curious about how it all works!
 
 ---
 ![DALL·E 2025-01-10 10 04 44 - A photo-realistic depiction of Napoleon Bonaparte and the philosopher Plato actively engaged in a TV debate  Napoleon, dressed in his iconic military ](https://github.com/user-attachments/assets/eb492b38-85ad-4560-bc10-ddc94a6ed19d)
