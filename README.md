@@ -8,7 +8,7 @@ Enjoy the timeless conversations!
 
 ## About the App
 
-**Time Machine** is an interactive application that brings historical and modern icons together in thought-provoking or hilarious conversations. The app randomly selects two famous individuals from a pool of 67 legendary figures across diverse fields such as science, politics, sports, and entertainment, and places them in a unique setting to discuss an intriguing topic.
+**Time Machine** is an interactive application that brings historical and modern icons together in thought-provoking or amusing conversations. The app randomly selects two famous individuals from a pool of 67 legendary figures across diverse fields such as science, politics, sports, and entertainment, and places them in a unique setting to discuss an intriguing topic.
 
 The topics range from fun facts and philosophical debates to hypothetical "would-you-rather" questions. The dialogue is styled to reflect the personalities of the chosen figures, making every encounter as entertaining as it is insightful.
 
