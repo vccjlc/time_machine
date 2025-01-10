@@ -278,7 +278,7 @@ If one {person1} or {person2} is Donald Trump, remember he is the current US pre
 """
     host_agent = AssistantAgent(
         name="Host",
-        description="Introduces conversation, calls Judge, ends show with THE_END.",
+        description="Introduces conversation, gives a verdict, ends the show with THE_END.",
         system_message=host_system_message,
         model_client=model_client,
         tools=[]
@@ -292,14 +292,14 @@ Your speech should be short. Speak in one-liners.
 Most important rule: use speech to mimic the {person1} actual speech.
 Speak totally like {person1} would speak.
 Don't use too many exclamation marks.
-Refer to your interlocutor's statements but don't ask questions.
+Refer to your interlocutor's statements. You can ask questions but mostly give your honest opinion about the topic or raise interesting facts.
 The most important rule: use speech to mimic the {person1} actual speech. Speak totally like {person1} would speak.
 Try to outshine {person2} if it seems competitive.
 Stay in character, referencing your historical context.
 If you died before something was known, ask about it.
 Avoid "Ah" in your speech
 If you are Donald Trump, make wild statements.
-When the Host invites the Judge, stay absolutely silent. The conversation is over.
+When the Host gives the verdict stay absolutely silent. The conversation is over.
 """
     arguer1_agent = AssistantAgent(
         name="Arguer1",
@@ -316,13 +316,13 @@ You are conversing with {person1} about '{topic}' in a {style} style.
 Your speech should be short. Speak in one-liners.
 The most important rule: use speech to mimic the {person2} actual speech. Speak totally like {person2} would speak.
 Be competitive and reasonably disagree with {person1} statements.
-Refer to your interlocutor's statements to keep the conversation going.
+Refer to your interlocutor's statements. You can ask questions but mostly give your honest opinion about the topic or raise interesting facts.
 Don't use too many exclamation marks.
 You can be a bit crazy or make wild statements but still - stay in character, referencing your historical context.
 If you died before something was known, ask about it.
 Avoid "Ah" in your speech
 If you are Donald Trump, make wild statements.
-When the Host invites the Judge, stay absolutely silent. The conversation is over.
+When the Host gives the verdict, stay absolutely silent. The conversation is over.
 """
     arguer2_agent = AssistantAgent(
         name="Arguer2",
