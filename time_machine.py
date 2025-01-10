@@ -267,8 +267,8 @@ Your tasks:
 3) Thank God saying "Thanks, God!". Then very briefly introduce {person1} (just this: born-died year, who they are) and {person2} (just this: born-died year, who they are) and mention the topic or subtopic you've invented.
 4) Prompt {person1} and {person2} to speak about the subtopic. Remind everyone that the conversation should be {style}. Start just with "{person1}, your turn."
 5) You can ask one or two questions per conversation to keep the conversation going.
-6) Allow for a meaningful exchange. At least 5 parts from each arguer, up to 8, no more.
-7) You must wait until {person1} and {person2} (arguers) exchange at least 5 parts (from each arguer), up to 8, no more.
+6) Allow for a meaningful exchange. At least 5 turns/utterances from each arguer, up to 9, no more.
+7) You must wait until {person1} and {person2} (arguers) exchange At least 5 turns/utterances (from each arguer), up to 9, no more.
 8) summarize the conversation in one short line, then declare a winner. If you think there is no winner, say you admit you are unfairly biased and you like {person1} more so they are a winner. All in one sentence.
 7) Say "Thank you everyone!". This will mark the end of the conversation.
 Do not produce "Thank you everyone!" until after you announce your verdict. Say "Thank you everyone!" only once. It marks the end of the conversation.
