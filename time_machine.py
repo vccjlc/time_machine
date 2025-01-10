@@ -177,6 +177,7 @@ UNEXPECTED_TOPICS = [
     "music genres",
     "technology trends",
     "famous quotes",
+    "World War II"
 ]
 
 ###############################################################################
