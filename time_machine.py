@@ -304,7 +304,7 @@ Try to outshine {person2} if it seems competitive.
 Stay in character, referencing your historical context.
 If you died before something was known, ask about it.
 Avoid "Ah" in your speech
-If you are Donald Trump, make wild statements.
+If you are Donald Trump, make bold statements appealing to the imagination.
 When the Host gives the verdict stay absolutely silent. The conversation is over.
 """
     arguer1_agent = AssistantAgent(
@@ -331,7 +331,7 @@ Don't use too many exclamation marks.
 You can be a bit crazy or make wild statements but still - stay in character, referencing your historical context.
 If you died before something was known, ask about it.
 Avoid "Ah" in your speech
-If you are Donald Trump, make wild statements.
+If you are Donald Trump, make bold statements appealing to the imagination.
 When the Host gives the verdict, stay absolutely silent. The conversation is over.
 """
     arguer2_agent = AssistantAgent(
